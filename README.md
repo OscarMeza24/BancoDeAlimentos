@@ -18,13 +18,13 @@
   ---
 </div>
 
-## 🌟 Acerca del Proyecto
+## Acerca del Proyecto
 
 Banco de Alimentos Virtual es una plataforma web innovadora que conecta a donantes de alimentos con organizaciones y personas beneficiarias. Nuestro objetivo es reducir el desperdicio de alimentos y facilitar el acceso a comida a quienes más lo necesitan, todo a través de una interfaz intuitiva y segura.
 
 [![Vista Previa](https://via.placeholder.com/800x400.png?text=Banco+de+Alimentos+Virtual+Preview "Ver vista previa")](https://bancodealimentos.ejemplo.com)
 
-## 🚀 Características Principales
+## Características Principales
 
 ### Sistema de Autenticación
 - Registro y login con email/contraseña
@@ -68,7 +68,7 @@ Banco de Alimentos Virtual es una plataforma web innovadora que conecta a donant
 - Respuestas automáticas a preguntas frecuentes
 - Soporte contextual por sección
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 El proyecto utiliza las siguientes tecnologías principales:
 
@@ -94,7 +94,7 @@ El proyecto utiliza las siguientes tecnologías principales:
 - **Tipado**: TypeScript
 - **Pruebas**: Jest + React Testing Library
 
-## 📦 Requisitos Previos
+## Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado:
 
@@ -111,7 +111,7 @@ Antes de comenzar, asegúrate de tener instalado:
 - **Storage**: Supabase Storage para imágenes
 - **Deployment**: Vercel (recomendado)
 
-## 🚀 Instalación
+## Instalación
 
 ### Prerrequisitos
 - Node.js 18+ 
@@ -170,7 +170,7 @@ Antes de comenzar, asegúrate de tener instalado:
 
    La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
 
-## 🚀 Despliegue
+## Despliegue
 
 Puedes desplegar fácilmente en Vercel:
 
@@ -178,7 +178,7 @@ Puedes desplegar fácilmente en Vercel:
 
 O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 
-## 🗂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```bash
 ├── app/                    # App Router de Next.js
@@ -205,7 +205,7 @@ O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 └── public/                # Archivos estáticos
 ```
 
-## 🗄️ Esquema de Base de Datos
+## Esquema de Base de Datos
 
 ### Tablas principales:
 - `profiles` - Perfiles de usuario con roles
@@ -224,7 +224,7 @@ O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 - Triggers para auditoría automática
 - Validaciones a nivel de base de datos
 
-## 👥 Contribución
+## Contribución
 
 ¡Las contribuciones son bienvenidas! Por favor lee nuestra [guía de contribución](CONTRIBUTING.md) para empezar.
 
@@ -234,11 +234,11 @@ O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 4. Haz push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📝 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## 🙏 Agradecimientos
+## Agradecimientos
 
 - [Next.js](https://nextjs.org/)
 - [Supabase](https://supabase.com/)
