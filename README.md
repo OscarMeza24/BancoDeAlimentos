@@ -180,7 +180,7 @@ O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 
 ## 🗂 Estructura del Proyecto
 
-\`\`\`
+```bash
 ├── app/                    # App Router de Next.js
 │   ├── auth/              # Páginas de autenticación
 │   ├── dashboard/         # Dashboard principal
@@ -203,7 +203,7 @@ O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
 │   ├── 01-create-tables.sql
 │   └── 02-seed-data.sql
 └── public/                # Archivos estáticos
-\`\`\`
+```
 
 ## 🗄️ Esquema de Base de Datos
 
@@ -314,13 +314,13 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ## 🚀 Deployment
 
 ### Vercel (Recomendado)
-\`\`\`bash
+```bash
 # Instalar Vercel CLI
 npm i -g vercel
 
 # Deploy
 vercel --prod
-\`\`\`
+```
 
 ### Variables de entorno en producción:
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -335,8 +335,9 @@ vercel --prod
 
 ## 🧪 Testing
 
-\`\`\`bash
+```bash
 # Ejecutar tests
+
 npm run test
 
 # Tests de integración
@@ -344,7 +345,7 @@ npm run test:integration
 
 # Coverage
 npm run test:coverage
-\`\`\`
+```
 
 ## 📊 Monitoreo y Analytics
 
