@@ -1,8 +1,30 @@
-# Banco de Alimentos Virtual
+<div align="center">
+  <h1>🍏 Banco de Alimentos Virtual</h1>
+  <p>
+    <strong>Conectando donantes con quienes más lo necesitan</strong>
+  </p>
+  <p>
+    <a href="#características-principales">Características</a> •
+    <a href="#-tecnologías">Tecnologías</a> •
+    <a href="-instalación">Instalación</a> •
+    <a href="#-contribución">Contribución</a> •
+    <a href="#-licencia">Licencia</a>
+  </p>
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+  [![GitHub stars](https://img.shields.io/github/stars/OscarMeza24/BancoDeAlimentos?style=social)](https://github.com/OscarMeza24/BancoDeAlimentos/stargazers)
 
-Una plataforma web completa que conecta donantes de alimentos con organizaciones y personas beneficiarias, reduciendo el desperdicio de comida y facilitando el acceso a alimentos a quienes más lo necesitan.
+  ---
+</div>
 
-## 🎯 Características Principales
+## 🌟 Acerca del Proyecto
+
+Banco de Alimentos Virtual es una plataforma web innovadora que conecta a donantes de alimentos con organizaciones y personas beneficiarias. Nuestro objetivo es reducir el desperdicio de alimentos y facilitar el acceso a comida a quienes más lo necesitan, todo a través de una interfaz intuitiva y segura.
+
+[![Vista Previa](https://via.placeholder.com/800x400.png?text=Banco+de+Alimentos+Virtual+Preview "Ver vista previa")](https://bancodealimentos.ejemplo.com)
+
+## 🚀 Características Principales
 
 ### Sistema de Autenticación
 - Registro y login con email/contraseña
@@ -46,7 +68,40 @@ Una plataforma web completa que conecta donantes de alimentos con organizaciones
 - Respuestas automáticas a preguntas frecuentes
 - Soporte contextual por sección
 
-## 🛠️ Stack Tecnológico
+## 🛠️ Tecnologías
+
+El proyecto utiliza las siguientes tecnologías principales:
+
+### Frontend
+- **Framework**: Next.js 14 con App Router
+- **Lenguaje**: TypeScript
+- **Estilos**: Tailwind CSS + shadcn/ui
+- **Mapas**: React Leaflet
+- **Formularios**: React Hook Form + Zod
+- **Gráficos**: Recharts
+
+### Backend
+- **Plataforma**: Supabase
+- **Base de Datos**: PostgreSQL
+- **Autenticación**: Supabase Auth
+- **Almacenamiento**: Supabase Storage
+- **Funciones Serverless**: Supabase Edge Functions
+
+### Herramientas de Desarrollo
+- **Control de Versiones**: Git + GitHub
+- **Formateo**: Prettier
+- **Linting**: ESLint
+- **Tipado**: TypeScript
+- **Pruebas**: Jest + React Testing Library
+
+## 📦 Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+- Node.js 18 o superior
+- npm 9 o superior
+- Una cuenta de [Supabase](https://supabase.com/)
+- Git
 
 - **Frontend**: Next.js 14, React, TypeScript
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Functions)
@@ -56,56 +111,74 @@ Una plataforma web completa que conecta donantes de alimentos con organizaciones
 - **Storage**: Supabase Storage para imágenes
 - **Deployment**: Vercel (recomendado)
 
-## 🚀 Instalación y Configuración
+## 🚀 Instalación
 
 ### Prerrequisitos
 - Node.js 18+ 
 - npm o yarn
 - Cuenta de Supabase
 
-### 1. Clonar el repositorio
-\`\`\`bash
-git clone <repository-url>
-cd banco-alimentos-virtual
-\`\`\`
+1. **Clona el repositorio**
+   ```bash
+   git clone https://github.com/OscarMeza24/BancoDeAlimentos.git
+   cd BancoDeAlimentos
+   ```
 
-### 2. Instalar dependencias
-\`\`\`bash
-npm install
-\`\`\`
+2. **Instala las dependencias**
+   ```bash
+   npm install
+   # o
+   yarn install
+   ```
 
-### 3. Configurar variables de entorno
-Crear archivo `.env.local`:
-\`\`\`env
-NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-\`\`\`
+3. **Configura las variables de entorno**
+   - Crea un archivo `.env.local` en la raíz del proyecto
+   - Obtén las credenciales de tu proyecto Supabase en Configuración > API
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
+   ```
 
-### 4. Configurar Supabase
+4. **Configura Supabase**
 
-#### Ejecutar scripts de base de datos:
-1. Ve a tu proyecto Supabase > SQL Editor
-2. Ejecuta `scripts/01-create-tables.sql`
-3. Ejecuta `scripts/02-seed-data.sql`
+   - **Base de Datos**:
+     ```sql
+     -- Ejecuta en SQL Editor de Supabase
+     -- 1. Crea las tablas
+     \i scripts/01-create-tables.sql
+     
+     -- 2. Inserta datos iniciales (opcional)
+     \i scripts/02-seed-data.sql
+     ```
 
-#### Configurar Storage:
-1. Ve a Storage > Create bucket
-2. Crea buckets: `food-images`, `avatars`
-3. Configura políticas públicas para lectura
+   - **Storage**:
+     1. Ve a Storage > Create bucket
+     2. Crea los buckets necesarios: `food-images`, `avatars`
+     3. Configura las políticas de acceso público según sea necesario
 
-#### Configurar Auth:
-1. Ve a Authentication > Settings
-2. Habilita email/password
-3. Configura redirect URLs para tu dominio
+   - **Autenticación**:
+     1. Ve a Authentication > Providers
+     2. Habilita el proveedor de correo/contraseña
+     3. Configura las URLs de redirección en Authentication > URL Configuration
 
-### 5. Ejecutar en desarrollo
-\`\`\`bash
-npm run dev
-\`\`\`
+5. **Inicia el servidor de desarrollo**
+   ```bash
+   npm run dev
+   # o
+   yarn dev
+   ```
 
-La aplicación estará disponible en `http://localhost:3000`
+   La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
 
-## 📁 Estructura del Proyecto
+## 🚀 Despliegue
+
+Puedes desplegar fácilmente en Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FOscarMeza24%2FBancoDeAlimentos)
+
+O seguir la [guía de despliegue](DEPLOYMENT.md) para otras plataformas.
+
+## 🗂 Estructura del Proyecto
 
 \`\`\`
 ├── app/                    # App Router de Next.js
@@ -151,7 +224,32 @@ La aplicación estará disponible en `http://localhost:3000`
 - Triggers para auditoría automática
 - Validaciones a nivel de base de datos
 
-## 👥 Roles y Permisos
+## 👥 Contribución
+
+¡Las contribuciones son bienvenidas! Por favor lee nuestra [guía de contribución](CONTRIBUTING.md) para empezar.
+
+1. Haz un Fork del proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Haz push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 🙏 Agradecimientos
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+<div align="center">
+  Hecho con ❤️ por <a href="https://github.com/OscarMeza24">Oscar Meza</a>
+</div>
 
 ### Donante
 - Registrar y gestionar donaciones de alimentos
