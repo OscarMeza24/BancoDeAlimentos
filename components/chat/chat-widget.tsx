@@ -93,6 +93,80 @@ export default function ChatWidget() {
     if (message.includes("gracias") || message.includes("thank")) {
       return "¡De nada! Es un placer ayudarte. Si tienes más preguntas, no dudes en preguntarme."
     }
+    if (message.includes("hola") || message.includes("buenos días") || message.includes("buenas tardes")) {
+      return "¡Hola! ¿En qué puedo ayudarte hoy?"
+    }
+
+    if (message.includes("adiós") || message.includes("hasta luego")) {
+      return "¡Hasta luego! Si necesitas más ayuda, aquí estaré."
+    }
+    
+    if (message.includes("quién eres") || message.includes("qué eres")) {
+      return "Soy el asistente virtual del Banco de Alimentos, aquí para ayudarte con cualquier consulta que tengas sobre la plataforma."
+    }
+    if (message.includes("qué puedes hacer") || message.includes("qué funciones tienes")) {
+      return "Puedo ayudarte a navegar por la plataforma, responder preguntas sobre cómo donar o solicitar alimentos, informarte sobre eventos de voluntariado y campañas solidarias, y mucho más."
+    }
+
+    if (message.includes("problema") || message.includes("error") || message.includes("fallo")) {
+      return "Lamento que estés experimentando problemas. Por favor, proporciona más detalles sobre el problema para que pueda asistirte mejor."
+    }
+    
+    if (message.includes("contactar soporte") || message.includes("ayuda humana")) {
+      return "Puedes contactar a nuestro equipo de soporte enviando un correo a soporte@bancoalimentos.org."
+    }
+
+    if (message.includes("horario") || message.includes("atención")) {
+      return "Nuestro horario de atención es de lunes a viernes, de 9:00 AM a 6:00 PM."
+    }
+
+    if (message.includes("ubicación física") || message.includes("dónde están")) {
+      return "Nuestra oficina principal está ubicada en Calle Falsa 123, Ciudad, País."
+    }
+
+    if (message.includes("requisitos para donar") || message.includes("cómo donar")) {
+      return "Para donar alimentos, asegúrate de que estén en buen estado y dentro de su fecha de caducidad. Puedes registrarte en la plataforma y seguir las instrucciones para hacer tu donación."
+    }
+
+    if (message.includes("requisitos para solicitar") || message.includes("cómo solicitar")) {
+      return "Para solicitar alimentos, debes estar registrado en la plataforma y cumplir con los criterios establecidos por el Banco de Alimentos. Visita la sección 'Solicitar Alimentos' para más detalles."
+    }
+    
+    if (message.includes("seguridad") || message.includes("privacidad")) {
+      return "Nos tomamos muy en serio la seguridad y privacidad de tus datos. Puedes leer nuestra política de privacidad en la sección correspondiente del sitio web."
+    }
+
+    if (message.includes("actualizar perfil") || message.includes("cambiar información")) {
+      return "Puedes actualizar tu información personal en la sección 'Perfil' de la plataforma. Asegúrate de guardar los cambios después de editarlos."
+    }
+
+    if (message.includes("estadísticas") || message.includes("mi actividad")) {
+      return "En tu perfil, puedes ver estadísticas sobre tus donaciones, solicitudes y participación en eventos de voluntariado."
+    }
+
+    if (message.includes("notificaciones") || message.includes("alertas")) {
+      return "Puedes gestionar tus preferencias de notificaciones en la sección 'Configuración' de tu perfil."
+    }
+
+    if (message.includes("sugerencias") || message.includes("feedback")) {
+      return "Agradecemos tus sugerencias. Puedes enviarlas a través del formulario de contacto en la sección 'Ayuda' o enviando un correo a sugerencias@bancoalimentos.org." 
+    }
+
+    if (message.includes("problemas técnicos") || message.includes("fallos en la plataforma")) {
+      return "Lamento que estés experimentando problemas técnicos. Por favor, proporciona más detalles sobre el problema para que nuestro equipo pueda asistirte mejor."
+    }
+
+    if (message.includes("actualizaciones") || message.includes("novedades")) {
+      return "Puedes mantenerte informado sobre las últimas actualizaciones y novedades siguiéndonos en nuestras redes sociales y suscribiéndote a nuestro boletín informativo."
+    }
+
+    if (message.includes("cómo funciona") || message.includes("qué es")) {
+      return "El Banco de Alimentos es una plataforma que conecta a donantes de alimentos con personas y organizaciones que los necesitan. Puedes donar alimentos, solicitar ayuda, participar como voluntario y apoyar campañas solidarias."
+    }
+
+    if (message.includes("quiénes somos") || message.includes("nuestra misión")) {
+      return "El Banco de Alimentos es una organización sin fines de lucro dedicada a combatir el hambre y reducir el desperdicio de alimentos. Nuestra misión es conectar a quienes tienen alimentos con quienes los necesitan."
+    }
 
     // Respuesta por defecto
     return "Entiendo tu consulta. Para obtener ayuda específica, puedes contactar a nuestro equipo de soporte o explorar las diferentes secciones de la plataforma. ¿Hay algo específico en lo que pueda ayudarte?"
