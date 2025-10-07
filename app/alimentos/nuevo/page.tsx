@@ -64,7 +64,7 @@ export default function NuevoAlimentoPage() {
       if (profileData?.address) {
         setFormData((prev) => ({
           ...prev,
-          pickup_location: profileData.address,
+          pickup_location: profileData.address!,
         }))
       }
     } catch (error) {
