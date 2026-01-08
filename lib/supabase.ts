@@ -27,15 +27,22 @@ export async function checkSupabaseConnection(): Promise<boolean> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 5000)
     
-    const response = await fetch(supabaseUrl + '/rest/v1/', {
-      method: 'HEAD',
-      signal: controller.signal,
-    })
+    // Intentar una operación simple de autenticación para verificar conectividad
+    const testPromise = supabase.auth.getSession()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('timeout')), 5000)
+    )
     
+    await Promise.race([testPromise, timeoutPromise])
     clearTimeout(timeoutId)
-    return response.ok || response.status === 401
-  } catch (error) {
-    return false
+    return true
+  } catch (error: any) {
+    // Si es timeout o error de red, retornar false
+    if (error?.message?.includes('timeout') || error?.message?.includes('fetch')) {
+      return false
+    }
+    // Otros errores (como auth errors) significan que el servidor está respondiendo
+    return true
   }
 }
 
