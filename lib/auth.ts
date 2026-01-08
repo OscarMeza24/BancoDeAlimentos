@@ -1,7 +1,38 @@
-import { supabase } from "./supabase"
+import { supabase, checkSupabaseConnection } from "./supabase"
 import type { Profile } from "./supabase"
 
+// Función auxiliar para manejar errores de autenticación
+function handleAuthError(error: any): string {
+  if (error.message?.includes('Timeout')) {
+    return 'La conexión está tardando demasiado. Verifica tu conexión a internet.'
+  }
+  
+  if (error.message?.includes('fetch') || error.message?.includes('network')) {
+    return 'Error de conexión. Verifica tu conexión a internet.'
+  }
+  
+  if (error.message?.includes('Invalid login credentials')) {
+    return 'Email o contraseña incorrectos.'
+  }
+  
+  if (error.message?.includes('Email not confirmed')) {
+    return 'Debes confirmar tu email antes de iniciar sesión.'
+  }
+  
+  if (error.message?.includes('User already registered')) {
+    return 'Este email ya está registrado.'
+  }
+  
+  return error.message || 'Error al procesar la solicitud.'
+}
+
 export async function signUp(email: string, password: string, userData: Partial<Profile>) {
+  // Verificar conectividad primero
+  const isConnected = await checkSupabaseConnection()
+  if (!isConnected) {
+    throw new Error('No se puede conectar con el servidor. Verifica tu conexión a internet.')
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -13,7 +44,7 @@ export async function signUp(email: string, password: string, userData: Partial<
     },
   })
 
-  if (error) throw error
+  if (error) throw new Error(handleAuthError(error))
 
   // Actualizar perfil con datos adicionales
   if (data.user) {
@@ -32,12 +63,18 @@ export async function signUp(email: string, password: string, userData: Partial<
 }
 
 export async function signIn(email: string, password: string) {
+  // Verificar conectividad primero
+  const isConnected = await checkSupabaseConnection()
+  if (!isConnected) {
+    throw new Error('No se puede conectar con el servidor. Verifica tu conexión a internet.')
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
-  if (error) throw error
+  if (error) throw new Error(handleAuthError(error))
   return data
 }
 

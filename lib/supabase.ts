@@ -3,7 +3,41 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+  global: {
+    fetch: (url, options = {}) => {
+      return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout: La conexión está tardando demasiado')), 15000)
+        ),
+      ]) as Promise<Response>
+    },
+  },
+})
+
+// Función para verificar conectividad con Supabase
+export async function checkSupabaseConnection(): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    
+    const response = await fetch(supabaseUrl + '/rest/v1/', {
+      method: 'HEAD',
+      signal: controller.signal,
+    })
+    
+    clearTimeout(timeoutId)
+    return response.ok || response.status === 401
+  } catch (error) {
+    return false
+  }
+}
 
 // Tipos de datos
 export interface Profile {

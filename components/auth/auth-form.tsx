@@ -16,6 +16,7 @@ import { Heart, Users, HandHeart, Shield } from "lucide-react"
 
 export default function AuthForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | null>(null)
   const router = useRouter()
 
   const [signInData, setSignInData] = useState({
@@ -38,15 +39,18 @@ export default function AuthForm() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setConnectionStatus('checking')
 
     try {
       await signIn(signInData.email, signInData.password)
+      setConnectionStatus('connected')
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión correctamente.",
       })
       router.push("/dashboard")
     } catch (error: any) {
+      setConnectionStatus('disconnected')
       toast({
         title: "Error al iniciar sesión",
         description: error.message,
@@ -54,12 +58,14 @@ export default function AuthForm() {
       })
     } finally {
       setIsLoading(false)
+      setTimeout(() => setConnectionStatus(null), 3000)
     }
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setConnectionStatus('checking')
 
     if (signUpData.password !== signUpData.confirmPassword) {
       toast({
@@ -68,6 +74,7 @@ export default function AuthForm() {
         variant: "destructive",
       })
       setIsLoading(false)
+      setConnectionStatus(null)
       return
     }
 
@@ -81,11 +88,13 @@ export default function AuthForm() {
         city: signUpData.city,
       })
 
+      setConnectionStatus('connected')
       toast({
         title: "¡Registro exitoso!",
         description: "Revisa tu email para confirmar tu cuenta.",
       })
     } catch (error: any) {
+      setConnectionStatus('disconnected')
       toast({
         title: "Error al registrarse",
         description: error.message,
@@ -93,6 +102,7 @@ export default function AuthForm() {
       })
     } finally {
       setIsLoading(false)
+      setTimeout(() => setConnectionStatus(null), 3000)
     }
   }
 
@@ -163,8 +173,20 @@ export default function AuthForm() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      {connectionStatus === 'checking' ? 'Conectando...' : 'Iniciando sesión...'}
+                    </span>
+                  ) : (
+                    "Iniciar Sesión"
+                  )}
                 </Button>
+                {connectionStatus === 'disconnected' && (
+                  <p className="text-sm text-red-600 text-center mt-2">
+                    Problema de conexión. Verifica tu internet.
+                  </p>
+                )}
               </form>
             </TabsContent>
 
