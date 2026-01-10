@@ -47,35 +47,54 @@ export default function DashboardPage() {
 
   const loadStats = async (profile: Profile) => {
     try {
-      const [donationsResult, requestsResult, campaignsResult, eventsResult] = await Promise.all([
-        // Total donaciones del usuario
-        supabase
+      let foodCountResult
+      let requestsResult
+
+      if (profile.role === "donante") {
+        // Para donantes: contar sus propias donaciones
+        foodCountResult = await supabase
           .from("food_items")
           .select("id", { count: "exact" })
-          .eq("donor_id", profile.id),
+          .eq("donor_id", profile.id)
 
-        // Total solicitudes del usuario (si es beneficiario)
-        supabase
+        // Solicitudes recibidas para sus alimentos
+        requestsResult = await supabase
           .from("food_requests")
           .select("id", { count: "exact" })
-          .eq("beneficiary_id", profile.id),
-
-        // Campañas activas
-        supabase
-          .from("campaigns")
+          .in("food_item_id", 
+            (await supabase
+              .from("food_items")
+              .select("id")
+              .eq("donor_id", profile.id)).data?.map(item => item.id) || [])
+      } else {
+        // Para beneficiarios: contar alimentos disponibles
+        foodCountResult = await supabase
+          .from("food_items")
           .select("id", { count: "exact" })
-          .eq("status", "activa"),
+          .eq("status", "disponible")
 
-        // Eventos próximos
-        supabase
-          .from("volunteer_events")
+        // Sus solicitudes realizadas
+        requestsResult = await supabase
+          .from("food_requests")
           .select("id", { count: "exact" })
-          .eq("status", "programado")
-          .gte("event_date", new Date().toISOString()),
-      ])
+          .eq("beneficiary_id", profile.id)
+      }
+
+      // Campañas activas
+      const campaignsResult = await supabase
+        .from("campaigns")
+        .select("id", { count: "exact" })
+        .eq("status", "activa")
+
+      // Eventos próximos
+      const eventsResult = await supabase
+        .from("volunteer_events")
+        .select("id", { count: "exact" })
+        .eq("status", "programado")
+        .gte("event_date", new Date().toISOString())
 
       setStats({
-        totalDonations: donationsResult.count || 0,
+        totalDonations: foodCountResult.count || 0,
         totalRequests: requestsResult.count || 0,
         activeCampaigns: campaignsResult.count || 0,
         upcomingEvents: eventsResult.count || 0,
