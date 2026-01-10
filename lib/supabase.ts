@@ -26,7 +26,7 @@ export const supabase = createClient(
       return Promise.race([
         fetch(url, options),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout: La conexión está tardando demasiado')), 15000)
+          setTimeout(() => reject(new Error('Timeout: La conexión está tardando demasiado')), 30000)
         ),
       ]) as Promise<Response>
     },
@@ -36,24 +36,26 @@ export const supabase = createClient(
 // Función para verificar conectividad con Supabase
 export async function checkSupabaseConnection(): Promise<boolean> {
   try {
+    // Usar un timeout más generoso (10 segundos)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
     
     // Intentar una operación simple de autenticación para verificar conectividad
     const testPromise = supabase.auth.getSession()
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('timeout')), 5000)
-    )
     
-    await Promise.race([testPromise, timeoutPromise])
+    await testPromise
     clearTimeout(timeoutId)
     return true
   } catch (error: any) {
+    console.error('Error al verificar conexión con Supabase:', error)
+    
     // Si es timeout o error de red, retornar false
-    if (error?.message?.includes('timeout') || error?.message?.includes('fetch')) {
+    // En otros casos, asumimos que el servidor está disponible pero hay otro error
+    if (error?.message?.includes('timeout') || error?.message?.includes('fetch') || error?.message?.includes('NetworkError')) {
       return false
     }
-    // Otros errores (como auth errors) significan que el servidor está respondiendo
+    
+    // Otros errores no son de conectividad
     return true
   }
 }

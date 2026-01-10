@@ -44,63 +44,55 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function signUp(email: string, password: string, userData: Partial<Profile>) {
-  // Verificar conectividad primero
-  const isConnected = await checkSupabaseConnection()
-  if (!isConnected) {
-    throw new Error('No se puede conectar con el servidor. Verifica tu conexión a internet.')
-  }
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: userData.full_name,
-        role: userData.role || "donante",
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: userData.full_name,
+          role: userData.role || "donante",
+        },
       },
-    },
-  })
+    })
 
-  if (error) throw new Error(handleAuthError(error))
+    if (error) throw new Error(handleAuthError(error))
 
-  // Actualizar perfil con datos adicionales
-  // El trigger ya creó el perfil automáticamente, solo actualizamos los campos adicionales
-  if (data.user) {
-    // Esperar un momento para que el trigger de Supabase cree el perfil base
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
-        ...userData,
-        email,
-      })
-      .eq('id', data.user.id)
+    // Actualizar perfil con datos adicionales
+    if (data.user) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          ...userData,
+          email,
+        })
+        .eq('id', data.user.id)
 
-    if (profileError) {
-      console.error('Error actualizando perfil:', profileError)
-      // No lanzar error, el perfil básico ya existe
-      console.log('El perfil básico fue creado, pero algunos campos adicionales no se guardaron')
+      if (profileError) {
+        console.error('Error actualizando perfil:', profileError)
+      }
     }
-  }
 
-  return data
+    return data
+  } catch (error: any) {
+    throw new Error(handleAuthError(error))
+  }
 }
 
 export async function signIn(email: string, password: string) {
-  // Verificar conectividad primero
-  const isConnected = await checkSupabaseConnection()
-  if (!isConnected) {
-    throw new Error('No se puede conectar con el servidor. Verifica tu conexión a internet.')
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) throw new Error(handleAuthError(error))
+    return data
+  } catch (error: any) {
+    throw new Error(handleAuthError(error))
   }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) throw new Error(handleAuthError(error))
-  return data
 }
 
 export async function signOut() {
