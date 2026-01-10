@@ -63,7 +63,15 @@ export default function MapaPage() {
       const profileData = await getCurrentProfile()
       setProfile(profileData)
 
-      await Promise.all([loadFoodLocations(), loadEventLocations(), loadOrganizations()])
+      // Cargar todas las ubicaciones y combinarlas
+      const [foodLocs, eventLocs, orgLocs] = await Promise.all([
+        loadFoodLocations(),
+        loadEventLocations(),
+        loadOrganizations(),
+      ])
+
+      // Establecer todas las ubicaciones de una vez para evitar duplicados
+      setLocations([...foodLocs, ...eventLocs, ...orgLocs])
     } catch (error) {
       console.error("Error loading data:", error)
       toast({
@@ -76,40 +84,70 @@ export default function MapaPage() {
     }
   }
 
-  const loadFoodLocations = async () => {
+  const loadFoodLocations = async (): Promise<MapLocation[]> => {
     try {
       const { data, error } = await supabase
         .from("food_items")
         .select(`
           *,
           category:food_categories(name, icon),
-          donor:profiles(full_name, city)
+          donor:profiles(full_name, city, latitude, longitude, address)
         `)
         .eq("status", "disponible")
-        .not("pickup_latitude", "is", null)
-        .not("pickup_longitude", "is", null)
 
       if (error) throw error
 
-      const foodLocations: MapLocation[] = (data || []).map((item) => ({
-        id: item.id,
-        type: "food",
-        title: item.name,
-        description: `${item.quantity} ${item.unit} - ${item.category?.name || "Sin categoría"}`,
-        latitude: item.pickup_latitude!,
-        longitude: item.pickup_longitude!,
-        address: item.pickup_location || "",
-        status: item.status,
-        data: item,
-      }))
+      console.log("Alimentos disponibles:", data?.length || 0)
 
-      setLocations((prev) => [...prev, ...foodLocations])
+      if (!data || data.length === 0) {
+        console.log("No hay alimentos disponibles")
+        return []
+      }
+
+      // Convertir alimentos a ubicaciones del mapa
+      const foodLocations: MapLocation[] = []
+
+      for (const item of data) {
+        let lat: number | null = null
+        let lng: number | null = null
+        let address = item.pickup_location || ""
+
+        // Prioridad 1: Usar las coordenadas de pickup guardadas
+        if (item.pickup_latitude && item.pickup_longitude) {
+          lat = item.pickup_latitude
+          lng = item.pickup_longitude
+        }
+        // Prioridad 2: Usar ubicación del donante si existe
+        else if (item.donor?.latitude && item.donor?.longitude) {
+          lat = item.donor.latitude
+          lng = item.donor.longitude
+          address = address || item.donor.address || ""
+        }
+
+        if (lat && lng) {
+          foodLocations.push({
+            id: item.id,
+            type: "food",
+            title: item.name,
+            description: `${item.quantity} ${item.unit}${item.category?.name ? ` - ${item.category.name}` : ""}`,
+            latitude: lat,
+            longitude: lng,
+            address: address,
+            status: item.status,
+            data: item,
+          })
+        }
+      }
+
+      console.log("Ubicaciones de alimentos creadas:", foodLocations.length)
+      return foodLocations
     } catch (error) {
       console.error("Error loading food locations:", error)
+      return []
     }
   }
 
-  const loadEventLocations = async () => {
+  const loadEventLocations = async (): Promise<MapLocation[]> => {
     try {
       const { data, error } = await supabase
         .from("volunteer_events")
@@ -133,13 +171,14 @@ export default function MapaPage() {
         data: event,
       }))
 
-      setLocations((prev) => [...prev, ...eventLocations])
+      return eventLocations
     } catch (error) {
       console.error("Error loading event locations:", error)
+      return []
     }
   }
 
-  const loadOrganizations = async () => {
+  const loadOrganizations = async (): Promise<MapLocation[]> => {
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -162,9 +201,10 @@ export default function MapaPage() {
         data: org,
       }))
 
-      setLocations((prev) => [...prev, ...orgLocations])
+      return orgLocations
     } catch (error) {
       console.error("Error loading organizations:", error)
+      return []
     }
   }
 

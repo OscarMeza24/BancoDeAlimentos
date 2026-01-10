@@ -1,7 +1,5 @@
 import type { Config } from "tailwindcss";
 
-// all in fixtures is set to tailwind v3 as interims solutions
-
 const config: Config = {
     darkMode: ["class"],
     content: [
@@ -12,6 +10,10 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        display: ['Poppins', 'sans-serif'],
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -85,11 +87,36 @@ const config: Config = {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+  			'float': {
+  				'0%, 100%': { transform: 'translateY(0px)' },
+  				'50%': { transform: 'translateY(-10px)' },
+  			},
+  			'glow': {
+  				'0%, 100%': { boxShadow: 'var(--shadow-lg), var(--shadow-glow)' },
+  				'50%': { boxShadow: 'var(--shadow-xl), 0 0 30px rgba(152, 181, 97, 0.5)' },
+  			},
+  			'slide-in-left': {
+  				'from': { opacity: '0', transform: 'translateX(-20px)' },
+  				'to': { opacity: '1', transform: 'translateX(0)' },
+  			},
+  			'slide-in-right': {
+  				'from': { opacity: '0', transform: 'translateX(20px)' },
+  				'to': { opacity: '1', transform: 'translateX(0)' },
+  			},
+  			'slide-in-up': {
+  				'from': { opacity: '0', transform: 'translateY(20px)' },
+  				'to': { opacity: '1', transform: 'translateY(0)' },
+  			},
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'float': 'float 3s ease-in-out infinite',
+  			'glow': 'glow 2s ease-in-out infinite',
+  			'slide-in-left': 'slide-in-left 0.5s ease-out',
+  			'slide-in-right': 'slide-in-right 0.5s ease-out',
+  			'slide-in-up': 'slide-in-up 0.5s ease-out',
   		}
   	}
   },

@@ -42,8 +42,25 @@ Una vez registrado:
    - Categoría (frutas, lácteos, etc.)
    - Cantidad y unidad
    - Fecha de vencimiento
-   - Ubicación de recogida
+   - **Ubicación de recogida** (puedes escribir manualmente o usar el mapa)
    - Instrucciones especiales
+
+#### ✨ Seleccionar Ubicación en el Mapa
+
+La plataforma te permite seleccionar la ubicación de recogida de forma interactiva:
+
+1. **En el campo "Ubicación de recogida"**, haz clic en el botón **"Mapa"** 🗺️
+2. **Se abrirá un mapa interactivo** donde podrás:
+   - **Hacer clic en la ubicación deseada** para crear un marcador
+   - **Arrastrar el marcador** para ajustar la ubicación exacta
+   - Ver las **coordenadas** de la ubicación seleccionada
+3. **Haz clic en "Confirmar ubicación"** para aplicar el cambio
+4. La dirección se rellenará automáticamente en el campo
+
+**💡 Consejos:**
+- Usa el mapa para ser preciso con tu ubicación
+- Si la dirección automática no es exacta, edítala manualmente
+- Asegúrate de que la ubicación sea accesible para los beneficiarios
 
 4. **Sube una foto** del producto (opcional pero recomendado)
 5. **Haz clic en "Registrar Donación"**
@@ -54,6 +71,21 @@ Una vez registrado:
 - **Recibir solicitudes**: Los beneficiarios pueden solicitar tus productos
 - **Coordinar entrega**: Contacta directamente con los beneficiarios
 - **Actualizar información**: Edita detalles si es necesario
+
+#### Editar una Donación
+
+Para editar una donación registrada:
+
+1. **Ve a la sección "Alimentos"**
+2. **Encuentra tu donación** en la lista
+3. **Haz clic en "Editar"** o el icono de edición
+4. **Modifica los detalles** que necesites:
+   - Nombre, descripción, categoría
+   - Cantidad y unidad
+   - Fecha de vencimiento
+   - **Ubicación de recogida** (usa el mapa como se describió anteriormente)
+   - Estado e instrucciones
+5. **Haz clic en "Guardar Cambios"**
 
 ### Consejos para Donantes
 

@@ -79,6 +79,27 @@ export interface Profile {
   avatar_url?: string
   created_at: string
   updated_at: string
+  settings?: {
+    notifications?: {
+      email_notifications: boolean
+      push_notifications: boolean
+      donation_alerts: boolean
+      event_invitations: boolean
+      weekly_digest: boolean
+      marketing_emails: boolean
+    }
+    privacy?: {
+      profile_visible: boolean
+      show_donations: boolean
+      show_location: boolean
+      allow_messages: boolean
+    }
+    preferences?: {
+      language: string
+      theme: string
+      timezone: string
+    }
+  }
 }
 
 export interface FoodCategory {

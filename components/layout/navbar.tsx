@@ -123,20 +123,20 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-primary/10 sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center">
-                <Heart className="h-5 w-5 text-white" />
+            <Link href="/dashboard" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <div className="h-10 w-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-md">
+                <Heart className="h-6 w-6 text-white" />
               </div>
-              <span className="font-bold text-xl text-green-800">Banco de Alimentos</span>
+              <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden sm:block">Banco de Alimentos</span>
             </Link>
           </div>
 
           {/* Navigation Links - Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-1">
             {getNavItems().map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
@@ -144,8 +144,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive 
+                      ? "bg-gradient-to-r from-primary/10 to-secondary/10 text-primary border border-primary/20" 
+                      : "text-gray-600 hover:text-primary hover:bg-primary/5"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -155,21 +157,21 @@ export default function Navbar() {
             })}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {/* Notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="relative hover:bg-primary/5 transition-colors">
+                  <Bell className="h-5 w-5 text-gray-600" />
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-gradient-to-r from-red-500 to-orange-500">
                       {unreadCount}
                     </Badge>
                   )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
+                <DropdownMenuLabel className="font-display">Notificaciones</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {notifications.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">No hay notificaciones</div>
@@ -177,7 +179,7 @@ export default function Navbar() {
                   notifications.map((notification) => (
                     <DropdownMenuItem
                       key={notification.id}
-                      className={`p-3 cursor-pointer ${!notification.read ? "bg-blue-50" : ""}`}
+                      className={`p-3 cursor-pointer transition-colors ${!notification.read ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
                       onClick={() => {
                         markNotificationAsRead(notification.id)
                         if (notification.action_url) {
@@ -201,47 +203,54 @@ export default function Navbar() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/5 transition-colors">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={profile.avatar_url || "/placeholder.svg"} alt={profile.full_name || ""} />
-                    <AvatarFallback>{profile.full_name?.charAt(0) || profile.email.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold">
+                      {profile.full_name?.charAt(0) || profile.email.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{profile.full_name || "Usuario"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{profile.email}</p>
-                    <Badge className={`w-fit mt-1 ${getRoleBadgeColor(profile.role)}`}>
+                <DropdownMenuLabel className="font-display">
+                  <div className="flex flex-col space-y-2">
+                    <p className="text-sm font-semibold leading-none text-gray-900">{profile.full_name || "Usuario"}</p>
+                    <p className="text-xs leading-none text-gray-500">{profile.email}</p>
+                    <Badge className={`w-fit mt-2 font-medium ${
+                      profile.role === "donante" ? "bg-gradient-to-r from-primary/20 to-primary/10 text-primary" :
+                      profile.role === "beneficiario" ? "bg-blue-100 text-blue-700" :
+                      profile.role === "voluntario" ? "bg-purple-100 text-purple-700" :
+                      "bg-orange-100 text-orange-700"
+                    }`}>
                       {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
                     </Badge>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/perfil" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
+                  <Link href="/perfil" className="flex items-center cursor-pointer hover:bg-primary/5 transition-colors">
+                    <User className="mr-2 h-4 w-4 text-primary" />
                     <span>Perfil</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/configuracion" className="flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
+                  <Link href="/configuraciones" className="flex items-center cursor-pointer hover:bg-primary/5 transition-colors">
+                    <Settings className="mr-2 h-4 w-4 text-primary" />
                     <span>Configuración</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Cerrar sesión</span>
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer hover:bg-red-50 transition-colors">
+                  <LogOut className="mr-2 h-4 w-4 text-red-500" />
+                  <span className="text-red-600">Cerrar sesión</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             {/* Mobile menu button */}
-            <Button variant="ghost" size="sm" className="md:hidden">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="sm" className="md:hidden hover:bg-primary/5">
+              <Menu className="h-5 w-5 text-gray-600" />
             </Button>
           </div>
         </div>

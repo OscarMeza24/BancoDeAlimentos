@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Upload, MapPin } from "lucide-react"
+import { CalendarIcon, Upload, MapPin, Map } from "lucide-react"
+import LocationPickerModal from "@/components/mapa/location-picker-modal"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { getCurrentProfile } from "@/lib/auth"
@@ -28,6 +29,7 @@ export default function NuevoAlimentoPage() {
   const [loading, setLoading] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,6 +39,8 @@ export default function NuevoAlimentoPage() {
     unit: "unidades",
     expiry_date: undefined as Date | undefined,
     pickup_location: "",
+    pickup_latitude: null as number | null,
+    pickup_longitude: null as number | null,
     special_instructions: "",
   })
 
@@ -129,6 +133,8 @@ export default function NuevoAlimentoPage() {
         unit: formData.unit,
         expiry_date: formData.expiry_date?.toISOString().split("T")[0],
         pickup_location: formData.pickup_location,
+        pickup_latitude: formData.pickup_latitude,
+        pickup_longitude: formData.pickup_longitude,
         special_instructions: formData.special_instructions,
         image_url: imageUrl,
         status: "disponible",
@@ -344,17 +350,29 @@ export default function NuevoAlimentoPage() {
               {/* Ubicación de recogida */}
               <div className="space-y-2">
                 <Label htmlFor="pickup_location">Ubicación de recogida *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="pickup_location"
-                    value={formData.pickup_location}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, pickup_location: e.target.value }))}
-                    placeholder="Dirección donde se puede recoger el alimento"
-                    className="pl-10"
-                    required
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="pickup_location"
+                      value={formData.pickup_location}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, pickup_location: e.target.value }))}
+                      placeholder="Dirección donde se puede recoger el alimento"
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="gap-2"
+                  >
+                    <Map className="h-4 w-4" />
+                    Mapa
+                  </Button>
                 </div>
+                <p className="text-xs text-gray-500">Haz clic en "Mapa" para seleccionar la ubicación en el mapa interactivo</p>
               </div>
 
               {/* Instrucciones especiales */}
@@ -382,6 +400,19 @@ export default function NuevoAlimentoPage() {
           </CardContent>
         </Card>
       </div>
+
+      <LocationPickerModal
+        open={showLocationPicker}
+        onOpenChange={setShowLocationPicker}
+        onLocationSelect={(location) => {
+          setFormData((prev) => ({
+            ...prev,
+            pickup_location: location.address,
+            pickup_latitude: location.latitude,
+            pickup_longitude: location.longitude,
+          }))
+        }}
+      />
     </div>
   )
 }

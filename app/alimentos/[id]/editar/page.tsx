@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, MapPin, Package, ArrowLeft } from "lucide-react"
+import { Calendar, MapPin, Package, ArrowLeft, Map } from "lucide-react"
+import LocationPickerModal from "@/components/mapa/location-picker-modal"
 import { getCurrentProfile } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import type { Profile, FoodItem, FoodCategory } from "@/lib/supabase"
@@ -24,6 +25,7 @@ export default function EditarAlimentoPage() {
   const [categories, setCategories] = useState<FoodCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -32,6 +34,8 @@ export default function EditarAlimentoPage() {
     unit: "unidades",
     expiry_date: "",
     pickup_location: "",
+    pickup_latitude: null as number | null,
+    pickup_longitude: null as number | null,
     status: "disponible" as "disponible" | "reservado" | "entregado" | "expirado",
     special_instructions: "",
     image_url: "",
@@ -85,6 +89,8 @@ export default function EditarAlimentoPage() {
         unit: data.unit || "unidades",
         expiry_date: data.expiry_date || "",
         pickup_location: data.pickup_location || "",
+        pickup_latitude: data.pickup_latitude || null,
+        pickup_longitude: data.pickup_longitude || null,
         status: data.status,
         special_instructions: data.special_instructions || "",
         image_url: data.image_url || "",
@@ -135,6 +141,8 @@ export default function EditarAlimentoPage() {
           unit: formData.unit,
           expiry_date: formData.expiry_date || null,
           pickup_location: formData.pickup_location || null,
+          pickup_latitude: formData.pickup_latitude,
+          pickup_longitude: formData.pickup_longitude,
           status: formData.status,
           special_instructions: formData.special_instructions || null,
           image_url: formData.image_url || null,
@@ -317,16 +325,28 @@ export default function EditarAlimentoPage() {
               {/* Ubicación */}
               <div className="space-y-2">
                 <Label htmlFor="pickup_location">Ubicación de Recolección</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="pickup_location"
-                    placeholder="Ej: Calle Principal 123, Ciudad"
-                    value={formData.pickup_location}
-                    onChange={(e) => handleChange("pickup_location", e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="pickup_location"
+                      placeholder="Ej: Calle Principal 123, Ciudad"
+                      value={formData.pickup_location}
+                      onChange={(e) => handleChange("pickup_location", e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="gap-2"
+                  >
+                    <Map className="h-4 w-4" />
+                    Mapa
+                  </Button>
                 </div>
+                <p className="text-xs text-gray-500">Haz clic en "Mapa" para seleccionar la ubicación en el mapa interactivo</p>
               </div>
 
               {/* Estado */}
@@ -382,14 +402,24 @@ export default function EditarAlimentoPage() {
                 >
                   Cancelar
                 </Button>
-                <Button type="button" variant="destructive" onClick={handleDelete} disabled={submitting}>
-                  Eliminar
-                </Button>
               </div>
             </form>
           </CardContent>
         </Card>
       </div>
+
+      <LocationPickerModal
+        open={showLocationPicker}
+        onOpenChange={setShowLocationPicker}
+        onLocationSelect={(location) => {
+          setFormData((prev) => ({
+            ...prev,
+            pickup_location: location.address,
+            pickup_latitude: location.latitude,
+            pickup_longitude: location.longitude,
+          }))
+        }}
+      />
     </div>
   )
 }

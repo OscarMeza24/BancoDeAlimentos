@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import AuthProvider from "@/components/auth/auth-provider";
 import ChatWidget from "@/components/chat/chat-widget";
+import SettingsProvider from "@/components/settings/settings-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -31,9 +32,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
-            <ChatWidget />
-            <Toaster />
+            <SettingsProvider>
+              {children}
+              <ChatWidget />
+              <Toaster />
+            </SettingsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
