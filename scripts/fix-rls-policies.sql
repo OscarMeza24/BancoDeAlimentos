@@ -1,7 +1,11 @@
 -- =====================================================
 -- FIX: Corregir recursión infinita en políticas RLS de profiles
 -- =====================================================
+-- ORDEN DE EJECUCIÓN: 3 - EJECUTAR SI HAY PROBLEMAS DE RLS
+-- =====================================================
 -- Este script corrige el error de "infinite recursion detected in policy for relation 'profiles'"
+-- Prerequisito: 01-create-tables.sql debe ejecutarse primero
+-- SOLO ejecutar si experimentas errores de recursión infinita
 -- =====================================================
 
 -- Primero, eliminamos las políticas problemáticas

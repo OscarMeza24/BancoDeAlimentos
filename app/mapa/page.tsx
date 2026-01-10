@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +12,19 @@ import { getCurrentProfile } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import type { Profile } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
+
+// Importación dinámica del mapa para evitar problemas con SSR
+const MapaInteractivo = dynamic(() => import("@/components/mapa/mapa-interactivo"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Cargando mapa...</p>
+      </div>
+    </div>
+  ),
+})
 
 interface MapLocation {
   id: string
@@ -226,6 +240,137 @@ export default function MapaPage() {
     }
   }
 
+  const handleRequestFood = async (foodItem: any) => {
+    if (!profile) {
+      toast({
+        title: "Acceso requerido",
+        description: "Debes iniciar sesión para solicitar alimentos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (profile.role !== "beneficiario") {
+      toast({
+        title: "Acceso restringido",
+        description: "Solo las organizaciones beneficiarias pueden solicitar alimentos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase.from("food_requests").insert({
+        food_item_id: foodItem.id,
+        beneficiary_id: profile.id,
+        status: "pendiente",
+        quantity_requested: foodItem.quantity,
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "¡Solicitud enviada!",
+        description: "El donante recibirá tu solicitud y te contactará pronto",
+      })
+
+      // Recargar datos después de un breve delay
+      setTimeout(() => {
+        loadData()
+      }, 500)
+    } catch (error) {
+      console.error("Error requesting food:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la solicitud. Intenta nuevamente",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleJoinEvent = async (event: any) => {
+    if (!profile) {
+      toast({
+        title: "Acceso requerido",
+        description: "Debes iniciar sesión para unirte a eventos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      // Verificar si ya está registrado
+      const { data: existingRegistration } = await supabase
+        .from("event_participants")
+        .select("*")
+        .eq("event_id", event.id)
+        .eq("volunteer_id", profile.id)
+        .single()
+
+      if (existingRegistration) {
+        toast({
+          title: "Ya estás registrado",
+          description: "Ya te habías unido a este evento anteriormente",
+        })
+        return
+      }
+
+      // Verificar si hay cupo disponible
+      if (event.max_volunteers && event.registered_volunteers >= event.max_volunteers) {
+        toast({
+          title: "Evento lleno",
+          description: "Este evento ya alcanzó el número máximo de voluntarios",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Registrar al voluntario en el evento
+      const { error } = await supabase.from("event_participants").insert({
+        event_id: event.id,
+        volunteer_id: profile.id,
+        status: "confirmado",
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "¡Te has unido al evento!",
+        description: "Recibirás más detalles por correo electrónico",
+      })
+
+      // Recargar datos después de un breve delay para permitir que el trigger actualice
+      setTimeout(() => {
+        loadData()
+      }, 500)
+    } catch (error) {
+      console.error("Error joining event:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo registrar en el evento. Intenta nuevamente",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleGetDirections = (location: MapLocation) => {
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}&travelmode=driving`
+    window.open(googleMapsUrl, "_blank")
+  }
+
+  const handleContactOrganization = (organization: any) => {
+    if (organization.email) {
+      window.location.href = `mailto:${organization.email}?subject=Consulta desde Banco de Alimentos`
+    } else if (organization.phone) {
+      window.location.href = `tel:${organization.phone}`
+    } else {
+      toast({
+        title: "Información no disponible",
+        description: "No hay datos de contacto disponibles para esta organización",
+      })
+    }
+  }
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Cargando mapa...</div>
   }
@@ -348,69 +493,38 @@ export default function MapaPage() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Mapa Interactivo Real */}
           <div className="lg:col-span-2">
-            <Card className="h-96 lg:h-full">
+            <Card className="h-96 lg:h-[600px]">
               <CardContent className="p-0 h-full">
-                <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 rounded-lg flex items-center justify-center relative overflow-hidden">
-                  {/* Map placeholder with locations */}
-                  <div className="absolute inset-0 p-8">
-                    <div className="relative w-full h-full">
-                      {/* Simulated map markers */}
-                      {filteredLocations.slice(0, 10).map((location, index) => (
-                        <div
-                          key={location.id}
-                          className={`absolute w-8 h-8 rounded-full flex items-center justify-center text-white font-bold cursor-pointer transform -translate-x-1/2 -translate-y-1/2 ${
-                            location.type === "food"
-                              ? "bg-green-500"
-                              : location.type === "event"
-                                ? "bg-blue-500"
-                                : "bg-purple-500"
-                          } ${selectedLocation?.id === location.id ? "ring-4 ring-white scale-110" : ""}`}
-                          style={{
-                            left: `${20 + (index % 3) * 30}%`,
-                            top: `${20 + Math.floor(index / 3) * 25}%`,
-                          }}
-                          onClick={() => setSelectedLocation(location)}
-                        >
-                          {getLocationIcon(location.type)}
-                        </div>
-                      ))}
-
-                      {/* User location marker */}
-                      {userLocation && (
-                        <div
-                          className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: "50%", top: "50%" }}
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-center z-10">
-                    <MapPin className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Mapa Interactivo</h3>
-                    <p className="text-gray-600 mb-4">
-                      Vista simulada del mapa con ubicaciones de alimentos, eventos y organizaciones
-                    </p>
-                    <div className="flex justify-center space-x-4 text-sm">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                        Alimentos
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                        Eventos
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                        Organizaciones
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <MapaInteractivo
+                  locations={filteredLocations}
+                  selectedLocation={selectedLocation}
+                  onLocationSelect={setSelectedLocation}
+                  userLocation={userLocation}
+                />
               </CardContent>
             </Card>
+
+            {/* Leyenda del mapa */}
+            <div className="mt-4 flex justify-center space-x-6 text-sm">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-gray-700">🍽️ Alimentos disponibles</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                <span className="text-gray-700">📅 Eventos de voluntariado</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                <span className="text-gray-700">🏢 Organizaciones</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span className="text-gray-700">📍 Tu ubicación</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -489,24 +603,56 @@ export default function MapaPage() {
                           <strong>Voluntarios:</strong> {selectedLocation.data.registered_volunteers} /{" "}
                           {selectedLocation.data.max_volunteers || "∞"}
                         </div>
+                        {selectedLocation.data.requirements && (
+                          <div>
+                            <strong>Requisitos:</strong> {selectedLocation.data.requirements}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  <div className="flex space-x-2">
+                  {selectedLocation.type === "organization" && (
+                    <div>
+                      <h4 className="font-medium mb-2">Información de la Organización</h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <strong>Tipo:</strong> {selectedLocation.data.organization_type || "No especificado"}
+                        </div>
+                        {selectedLocation.data.city && (
+                          <div>
+                            <strong>Ciudad:</strong> {selectedLocation.data.city}
+                          </div>
+                        )}
+                        {selectedLocation.data.phone && (
+                          <div>
+                            <strong>Teléfono:</strong> {selectedLocation.data.phone}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
                     {selectedLocation.type === "food" && profile?.role === "beneficiario" && (
-                      <Button size="sm">
+                      <Button size="sm" onClick={() => handleRequestFood(selectedLocation.data)}>
                         <Heart className="h-4 w-4 mr-2" />
                         Solicitar Alimento
                       </Button>
                     )}
-                    {selectedLocation.type === "event" && (
-                      <Button size="sm">
+                    {selectedLocation.type === "event" && profile && (
+                      <Button size="sm" onClick={() => handleJoinEvent(selectedLocation.data)}>
                         <Users className="h-4 w-4 mr-2" />
                         Unirse al Evento
                       </Button>
                     )}
-                    <Button variant="outline" size="sm">
+                    {selectedLocation.type === "organization" && (
+                      <Button size="sm" onClick={() => handleContactOrganization(selectedLocation.data)}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Contactar
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => handleGetDirections(selectedLocation)}>
                       <Navigation className="h-4 w-4 mr-2" />
                       Cómo llegar
                     </Button>

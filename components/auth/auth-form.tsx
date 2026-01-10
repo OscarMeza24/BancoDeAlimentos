@@ -42,13 +42,21 @@ export default function AuthForm() {
     setConnectionStatus('checking')
 
     try {
-      await signIn(signInData.email, signInData.password)
+      const result = await signIn(signInData.email, signInData.password)
       setConnectionStatus('connected')
-      toast({
-        title: "¡Bienvenido!",
-        description: "Has iniciado sesión correctamente.",
-      })
-      router.push("/dashboard")
+      
+      if (result?.user) {
+        toast({
+          title: "¡Bienvenido!",
+          description: "Has iniciado sesión correctamente.",
+        })
+        
+        // Pequeña pausa para que se cargue el perfil
+        setTimeout(() => {
+          router.push("/dashboard")
+          router.refresh()
+        }, 300)
+      }
     } catch (error: any) {
       setConnectionStatus('disconnected')
       toast({
@@ -67,10 +75,23 @@ export default function AuthForm() {
     setIsLoading(true)
     setConnectionStatus('checking')
 
+    // Validar que las contraseñas coincidan
     if (signUpData.password !== signUpData.confirmPassword) {
       toast({
         title: "Error",
         description: "Las contraseñas no coinciden",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+      setConnectionStatus(null)
+      return
+    }
+
+    // Validar longitud mínima de contraseña
+    if (signUpData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "La contraseña debe tener al menos 6 caracteres",
         variant: "destructive",
       })
       setIsLoading(false)

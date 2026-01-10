@@ -1,202 +1,196 @@
-# 🎬 GUIÓN DETALLADO - VIDEO DE CAPACITACIÓN
+# 🎬 GUIÓN VIDEO DE CAPACITACIÓN
 ## BANCO DE ALIMENTOS VIRTUAL
 
 ---
 
 ## 📋 INFORMACIÓN DEL VIDEO
 
-**Duración estimada:** 30-35 minutos  
-**Público objetivo:** Desarrolladores, stakeholders, usuarios finales  
-**Nivel:** Intermedio-Avanzado  
-**Formato:** Tutorial + Demostración práctica
+**Duración estimada:** 10-12 minutos  
+**Público objetivo:** Desarrolladores y usuarios finales  
+**Formato:** Tutorial práctico y conciso
 
 ---
 
-## 🎯 OBJETIVOS DE APRENDIZAJE
+## 🎯 OBJETIVOS
 
-Al finalizar este video, los participantes podrán:
-1. Comprender la arquitectura completa del sistema
-2. Instalar y configurar el proyecto localmente
-3. Navegar y utilizar todas las funcionalidades
-4. Entender la estructura de la base de datos
-5. Realizar mantenimiento y mejoras al sistema
-
----
-
-# 📺 GUIÓN POR SECCIONES
+Al finalizar este video:
+1. Entender qué es y cómo funciona el sistema
+2. Instalar y configurar el proyecto
+3. Usar las funcionalidades principales
+4. Conocer aspectos técnicos clave
 
 ---
 
-## SECCIÓN 1: INTRODUCCIÓN Y CONTEXTO
-**⏱️ Duración: 2-3 minutos**
-
-### 🎬 ESCENA 1.1 - Apertura [0:00-0:30]
-
-**[VISUAL: Logo animado del Banco de Alimentos + música suave de fondo]**
-
-**NARRADOR:**
-> "Bienvenidos a la capacitación completa del **Banco de Alimentos Virtual**, una plataforma innovadora que conecta la generosidad con la necesidad. En este video aprenderás todo lo necesario para entender, implementar y utilizar este sistema que está cambiando vidas en nuestra comunidad."
-
-**[VISUAL: Transición a pantalla con puntos clave]**
+# 📺 GUIÓN
 
 ---
 
-### 🎬 ESCENA 1.2 - Problemática y Solución [0:30-2:00]
+## 1. INTRODUCCIÓN [0:00-1:00]
 
-**[VISUAL: Estadísticas sobre desperdicio de alimentos e inseguridad alimentaria]**
+**[VISUAL: Logo + pantalla principal]**
 
-**NARRADOR:**
-> "Cada año, millones de toneladas de alimentos se desperdician mientras miles de personas enfrentan inseguridad alimentaria. Nuestra plataforma resuelve este problema mediante:"
+"Bienvenido al **Banco de Alimentos Virtual**, plataforma que conecta donantes con beneficiarios para reducir el desperdicio de alimentos y ayudar a la comunidad."
 
-**[VISUAL: Animación mostrando 4 puntos]**
-
-1. **Conectar donantes con beneficiarios** de forma rápida y segura
-2. **Reducir el desperdicio** mediante alertas de vencimiento
-3. **Facilitar el voluntariado** con eventos coordinados
-4. **Transparentar las donaciones monetarias** con seguimiento en tiempo real
+**Stack tecnológico:**
+- Next.js 14 + TypeScript
+- Supabase (PostgreSQL + Auth)
+- Tailwind CSS + shadcn/ui
+- React Leaflet para mapas
 
 ---
 
-### 🎬 ESCENA 1.3 - Visión General del Sistema [2:00-3:00]
+## 2. INSTALACIÓN RÁPIDA [1:00-2:30]
 
-**[VISUAL: Diagrama de arquitectura simplificado]**
+**[VISUAL: Terminal y VS Code]**
 
-**NARRADOR:**
-> "El sistema está construido con tecnologías modernas y escalables:"
-
-**[MOSTRAR en pantalla mientras se menciona cada tecnología]**
-
-- ⚛️ **Frontend:** Next.js 14 con TypeScript
-- 🎨 **UI:** Tailwind CSS + shadcn/ui  
-- 🗄️ **Backend:** Supabase (PostgreSQL + Auth + Storage)
-- 🗺️ **Mapas:** React Leaflet
-- 📊 **Gráficos:** Recharts
-
-**NARRADOR:**
-> "Esta arquitectura nos permite tener una aplicación rápida, segura y fácil de mantener."
-
----
-
-## SECCIÓN 2: ARQUITECTURA TÉCNICA
-**⏱️ Duración: 5-6 minutos**
-
-### 🎬 ESCENA 2.1 - Estructura del Proyecto [3:00-4:30]
-
-**[VISUAL: Captura del VS Code mostrando la estructura de carpetas]**
-
-**NARRADOR:**
-> "Analicemos la estructura del proyecto. Como pueden ver, seguimos las mejores prácticas de Next.js 14 con App Router."
-
-**[ZOOM a cada carpeta mientras se explica]**
-
+**1. Clonar e instalar:**
+```bash
+git clone [repo]
+cd BancoAlimentos
+pnpm install
 ```
-📁 app/
-   ├── admin/          → Panel administrativo
-   ├── alimentos/      → Gestión de donaciones
-   ├── auth/           → Autenticación
-   ├── campanas/       → Campañas solidarias
-   ├── dashboard/      → Dashboard principal
-   ├── eventos/        → Eventos de voluntariado
-   ├── mapa/          → Mapa interactivo
-   └── perfil/        → Perfil de usuario
 
-📁 components/
-   ├── auth/          → Componentes de autenticación
-   ├── chat/          → Widget de soporte
-   ├── layout/        → Navbar y layouts
-   └── ui/            → Componentes reutilizables
+**2. Configurar Supabase:**
+- Crear proyecto en supabase.com
+- Copiar URL y ANON_KEY al `.env.local`
+- Ejecutar scripts SQL en orden:
+  1. `01-create-tables.sql` (tablas y políticas)
+  2. `02-seed-data.sql` (datos de prueba)
 
-📁 lib/
-   ├── auth.ts        → Lógica de autenticación
-   ├── supabase.ts    → Cliente de Supabase
-   └── utils.ts       → Utilidades generales
-
-📁 scripts/
-   ├── 01-create-tables.sql    → Creación de tablas
-   └── 02-seed-data.sql        → Datos de prueba
+**3. Iniciar:**
+```bash
+pnpm dev
 ```
 
 ---
 
-### 🎬 ESCENA 2.2 - Base de Datos [4:30-7:00]
+## 3. ROLES Y FUNCIONALIDADES [2:30-5:00]
 
-**[VISUAL: Diagrama entidad-relación en pantalla]**
+**[VISUAL: Dashboard de cada rol]**
 
-**NARRADOR:**
-> "La base de datos es el corazón del sistema. Tenemos 12 tablas principales organizadas en módulos:"
+### 🎯 **DONANTE**
+- Registrar alimentos con foto, cantidad, vencimiento
+- Ver solicitudes de beneficiarios en el mapa
+- Confirmar entregas
 
-**[MOSTRAR diagrama con colores por módulo]**
+### 🙏 **BENEFICIARIO**
+- Buscar alimentos disponibles
+- Solicitar productos necesarios
+- Recibir notificaciones
 
-#### **🔐 MÓDULO DE USUARIOS**
+### 👥 **VOLUNTARIO**
+- Ver eventos disponibles
+- Inscribirse en actividades
+- Gestionar participaciones
+
+### 👨‍💼 **ADMINISTRADOR**
+- Panel de control completo
+- Gestionar usuarios y verificaciones
+- Crear campañas de donación
+- Ver estadísticas en tiempo real
+
+---
+
+## 4. FUNCIONALIDADES CLAVE [5:00-7:30]
+
+**[VISUAL: Demo en vivo de cada función]**
+
+### 📍 **Mapa Interactivo**
+- Visualización geográfica de donaciones
+- Filtros por categoría y fecha
+- Cálculo de distancia automático
+
+### 💰 **Campañas Solidarias**
+- Donaciones monetarias
+- Seguimiento de metas con barra de progreso
+- Contador automático con triggers SQL
+
+### 🔔 **Sistema de Notificaciones**
+- Alertas de solicitudes
+- Recordatorios de eventos
+- Actualizaciones en tiempo real
+
+### 📊 **Dashboard Analítico**
+- Gráficos de donaciones
+- Métricas de impacto
+- Reportes personalizados
+
+---
+
+## 5. ASPECTOS TÉCNICOS IMPORTANTES [7:30-9:30]
+
+**[VISUAL: Código y diagramas]**
+
+### 🔐 **Seguridad**
+```typescript
+// RLS (Row Level Security) en todas las tablas
+// Los usuarios solo ven sus propios datos
+```
+
+### 🔄 **Contadores Automáticos**
 ```sql
--- Tabla: profiles
+-- Triggers actualizan:
+- current_amount en campaigns
+- available_spots en eventos
+- food_items status según vencimiento
 ```
-**NARRADOR:**
-> "La tabla `profiles` extiende la autenticación de Supabase con roles específicos: donante, beneficiario, voluntario y administrador. Cada perfil almacena información de contacto, ubicación y verificación."
 
-**[HIGHLIGHT en el diagrama: profiles → roles]**
+### 🗂️ **Estructura del Proyecto**
+```
+app/          → Páginas por módulo
+components/   → Componentes reutilizables
+lib/          → Lógica y utilidades
+scripts/      → SQL de base de datos
+```
+
+### ⚠️ **Solución de Problemas Comunes**
+- Variables de entorno no configuradas → Revisar `.env.local`
+- Errores RLS → Ejecutar `fix-rls-policies.sql`
+- Contadores no actualizan → Ejecutar `fix-triggers.sql`
 
 ---
 
-#### **🍎 MÓDULO DE ALIMENTOS**
-```sql
--- Tablas: food_categories, food_items, food_requests
-```
+## 6. DEMO PRÁCTICA [9:30-11:00]
 
-**NARRADOR:**
-> "El módulo de alimentos maneja el ciclo completo de donación:"
+**[VISUAL: Flujo completo en 90 segundos]**
 
-**[ANIMACIÓN del flujo]**
+**Escenario:** Juan dona pan, María lo solicita
 
-1. **food_categories** → Categorización (frutas, lácteos, etc.)
-2. **food_items** → Registro de donaciones con:
-   - Descripción y cantidad
-   - Fecha de vencimiento
-   - Ubicación de recogida (latitud/longitud)
-   - Estado: disponible, reservado, entregado, expirado
-3. **food_requests** → Solicitudes de beneficiarios
-   - Estado: pendiente, aprobada, rechazada, completada
+1. **Juan (donante):** Crea donación "10 panes franceses, vence mañana"
+2. **Sistema:** Marca ubicación en mapa, envía notificación
+3. **María (beneficiaria):** Ve en mapa, solicita 5 panes
+4. **Juan:** Recibe solicitud, aprueba
+5. **María:** Recibe confirmación con dirección
+6. **Juan:** Confirma entrega → Estado cambia a "entregado"
 
 ---
 
-#### **📅 MÓDULO DE EVENTOS**
-```sql
--- Tablas: volunteer_events, event_participants
-```
+## 7. CIERRE [11:00-12:00]
 
-**NARRADOR:**
-> "Los eventos coordinan el voluntariado. Cada evento tiene una fecha, ubicación, límite de participantes y descripción. Los voluntarios se registran y el sistema controla automáticamente las plazas disponibles."
+**[VISUAL: Resumen en pantalla]**
 
----
+**Puntos clave para recordar:**
+✅ Instalación en 3 pasos (clonar, configurar Supabase, ejecutar scripts)
+✅ 4 roles con permisos específicos
+✅ Seguridad con RLS automática
+✅ Mapa interactivo en tiempo real
+✅ Scripts SQL en orden numérico
 
-#### **💝 MÓDULO DE CAMPAÑAS**
-```sql
--- Tablas: campaigns, monetary_donations
-```
+**Recursos:**
+- Documentación en README.md
+- Scripts SQL numerados en `/scripts`
+- Manual de usuario en MANUAL_USUARIO.md
 
-**NARRADOR:**
-> "Las campañas solidarias permiten donaciones monetarias para causas específicas. Cada campaña tiene una meta, seguimiento del progreso y fechas de inicio y fin."
-
----
-
-#### **🔔 MÓDULO DE NOTIFICACIONES**
-```sql
--- Tabla: notifications
-```
-
-**NARRADOR:**
-> "El sistema de notificaciones mantiene a los usuarios informados sobre solicitudes, eventos, campañas y actualizaciones del sistema."
+**¡Gracias por ver! Cualquier duda, consulta la documentación del proyecto.**
 
 ---
 
-### 🎬 ESCENA 2.3 - Seguridad con RLS [7:00-9:00]
+## 📝 NOTAS DE PRODUCCIÓN
 
-**[VISUAL: Código SQL de políticas RLS en pantalla]**
-
-**NARRADOR:**
-> "La seguridad es fundamental. Implementamos Row Level Security (RLS) en todas las tablas, asegurando que cada usuario solo acceda a sus propios datos."
-
-**[MOSTRAR ejemplos de políticas]**
+- **Ritmo:** Rápido pero claro, sin pausas innecesarias
+- **Visuales:** Screen recording con zoom en puntos clave
+- **Edición:** Cortes rápidos, sin transiciones largas
+- **Música:** Fondo suave solo en intro/outro
 
 ```sql
 -- Ejemplo: Solo el donante ve sus alimentos

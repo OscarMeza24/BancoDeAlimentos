@@ -1,8 +1,11 @@
- -- =====================================================
+-- =====================================================
 -- BANCO DE ALIMENTOS - SCRIPT DE BASE DE DATOS MEJORADO
+-- =====================================================
+-- ORDEN DE EJECUCIÓN: 1 - EJECUTAR PRIMERO
 -- =====================================================
 -- Este script incluye todas las tablas, políticas RLS,
 -- triggers, funciones y validaciones necesarias
+-- Debe ejecutarse ANTES de cualquier otro script
 -- =====================================================
 
 -- Crear extensiones necesarias
@@ -372,6 +375,12 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 -- POLÍTICAS RLS PARA PROFILES
 -- =====================================================
 
+-- Los usuarios pueden crear su propio perfil durante el registro
+DROP POLICY IF EXISTS "Los usuarios pueden crear su propio perfil" ON profiles;
+CREATE POLICY "Los usuarios pueden crear su propio perfil" ON profiles
+  FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
 -- Los usuarios pueden ver su propio perfil
 DROP POLICY IF EXISTS "Los usuarios pueden ver su propio perfil" ON profiles;
 CREATE POLICY "Los usuarios pueden ver su propio perfil" ON profiles
@@ -382,7 +391,8 @@ CREATE POLICY "Los usuarios pueden ver su propio perfil" ON profiles
 DROP POLICY IF EXISTS "Los usuarios pueden actualizar su propio perfil" ON profiles;
 CREATE POLICY "Los usuarios pueden actualizar su propio perfil" ON profiles
   FOR UPDATE 
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Cualquiera autenticado puede ver perfiles públicos básicos
 DROP POLICY IF EXISTS "Usuarios autenticados pueden ver perfiles públicos" ON profiles;
@@ -390,15 +400,16 @@ CREATE POLICY "Usuarios autenticados pueden ver perfiles públicos" ON profiles
   FOR SELECT 
   USING (auth.role() = 'authenticated');
 
--- Los administradores pueden ver todos los perfiles
+-- Los administradores pueden ver todos los perfiles (SIN RECURSIÓN)
 DROP POLICY IF EXISTS "Los administradores pueden ver todos los perfiles" ON profiles;
-CREATE POLICY "Los administradores pueden ver todos los perfiles" ON profiles
+DROP POLICY IF EXISTS "Los administradores pueden gestionar todos los perfiles" ON profiles;
+CREATE POLICY "Los administradores pueden gestionar todos los perfiles" ON profiles
   FOR ALL
   USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'administrador'
-    )
+    -- Usar JWT metadata en lugar de SELECT a profiles para evitar recursión
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'administrador'
+    OR
+    (auth.jwt() -> 'app_metadata' ->> 'role') = 'administrador'
   );
 
 -- =====================================================

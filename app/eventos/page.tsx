@@ -100,6 +100,9 @@ export default function EventosPage() {
     if (!profile) return
 
     try {
+      // Buscar el evento en el array
+      const event = events.find(e => e.id === eventId)
+      
       const { error } = await supabase.from("event_participants").insert({
         event_id: eventId,
         volunteer_id: profile.id,
@@ -108,14 +111,8 @@ export default function EventosPage() {
 
       if (error) throw error
 
-      // Actualizar contador de voluntarios registrados
-      const event = events.find((e) => e.id === eventId)
-      if (event) {
-        await supabase
-          .from("volunteer_events")
-          .update({ registered_volunteers: event.registered_volunteers + 1 })
-          .eq("id", eventId)
-      }
+      // El trigger update_event_volunteers_count() actualizará automáticamente el contador
+      // No es necesario hacer UPDATE manual
 
       // Crear notificación
       await supabase.from("notifications").insert({
@@ -153,14 +150,8 @@ export default function EventosPage() {
 
       if (error) throw error
 
-      // Actualizar contador de voluntarios registrados
-      const event = events.find((e) => e.id === eventId)
-      if (event && event.registered_volunteers > 0) {
-        await supabase
-          .from("volunteer_events")
-          .update({ registered_volunteers: event.registered_volunteers - 1 })
-          .eq("id", eventId)
-      }
+      // El trigger update_event_volunteers_count() actualizará automáticamente el contador
+      // No es necesario hacer UPDATE manual
 
       toast({
         title: "Has salido del evento",

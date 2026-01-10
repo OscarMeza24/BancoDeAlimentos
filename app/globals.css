@@ -88,3 +88,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos para Leaflet */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.leaflet-popup-tip {
+  background: white;
+}

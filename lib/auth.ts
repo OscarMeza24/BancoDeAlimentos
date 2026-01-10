@@ -3,28 +3,45 @@ import type { Profile } from "./supabase"
 
 // Función auxiliar para manejar errores de autenticación
 function handleAuthError(error: any): string {
-  if (error.message?.includes('Timeout')) {
+  const message = error.message || error.error_description || ''
+  
+  if (message.includes('Timeout')) {
     return 'La conexión está tardando demasiado. Verifica tu conexión a internet.'
   }
   
-  if (error.message?.includes('fetch') || error.message?.includes('network')) {
-    return 'Error de conexión. Verifica tu conexión a internet.'
+  if (message.includes('fetch') || message.includes('network')) {
+    return 'Error de conexión. Verifica tu conexión a internet y la configuración de Supabase.'
   }
   
-  if (error.message?.includes('Invalid login credentials')) {
+  if (message.includes('Invalid login credentials')) {
     return 'Email o contraseña incorrectos.'
   }
   
-  if (error.message?.includes('Email not confirmed')) {
-    return 'Debes confirmar tu email antes de iniciar sesión.'
+  if (message.includes('Email not confirmed')) {
+    return 'Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.'
   }
   
-  if (error.message?.includes('User already registered')) {
-    return 'Este email ya está registrado.'
+  if (message.includes('User already registered')) {
+    return 'Este email ya está registrado. Intenta iniciar sesión.'
   }
   
-  return error.message || 'Error al procesar la solicitud.'
+  if (message.includes('Unable to validate email address')) {
+    return 'Email inválido. Verifica el formato.'
+  }
+  
+  if (message.includes('Password should be at least')) {
+    return 'La contraseña debe tener al menos 6 caracteres.'
+  }
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return '⚠️ Variables de entorno no configuradas. Revisa tu archivo .env.local'
+  }
+  
+  return message || 'Error al procesar la solicitud.'
 }
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function signUp(email: string, password: string, userData: Partial<Profile>) {
   // Verificar conectividad primero
@@ -47,16 +64,24 @@ export async function signUp(email: string, password: string, userData: Partial<
   if (error) throw new Error(handleAuthError(error))
 
   // Actualizar perfil con datos adicionales
+  // El trigger ya creó el perfil automáticamente, solo actualizamos los campos adicionales
   if (data.user) {
+    // Esperar un momento para que el trigger de Supabase cree el perfil base
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
         ...userData,
         email,
       })
-      .eq("id", data.user.id)
+      .eq('id', data.user.id)
 
-    if (profileError) throw profileError
+    if (profileError) {
+      console.error('Error actualizando perfil:', profileError)
+      // No lanzar error, el perfil básico ya existe
+      console.log('El perfil básico fue creado, pero algunos campos adicionales no se guardaron')
+    }
   }
 
   return data

@@ -1,9 +1,21 @@
 import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    '⚠️ CONFIGURACIÓN FALTANTE: Variables de entorno de Supabase no configuradas.\n' +
+    'Por favor, crea un archivo .env.local con:\n' +
+    'NEXT_PUBLIC_SUPABASE_URL=tu-url\n' +
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-clave'
+  )
+}
+
+export const supabase = createClient(
+  supabaseUrl || '',
+  supabaseAnonKey || '',
+  {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -137,6 +149,11 @@ export interface VolunteerEvent {
   status: "programado" | "en_curso" | "completado" | "cancelado"
   created_by?: string
   created_at: string
+  creator?: {
+    id: string
+    full_name?: string
+    avatar_url?: string
+  }
 }
 
 export interface Notification {

@@ -1,7 +1,10 @@
 -- =====================================================
 -- BANCO DE ALIMENTOS - DATOS INICIALES Y SEMILLAS
 -- =====================================================
+-- ORDEN DE EJECUCIÓN: 2 - EJECUTAR SEGUNDO
+-- =====================================================
 -- Script mejorado con datos de prueba completos
+-- Prerequisito: 01-create-tables.sql debe ejecutarse primero
 -- =====================================================
 
 -- =====================================================

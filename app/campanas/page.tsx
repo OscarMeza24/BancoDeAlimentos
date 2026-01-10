@@ -86,7 +86,7 @@ export default function CampanasPage() {
     if (!profile) return
 
     try {
-      // Simular donación (en producción se integraría con Stripe/PayPal)
+      // Crear donación monetaria
       const { error: donationError } = await supabase.from("monetary_donations").insert({
         donor_id: profile.id,
         campaign_id: campaignId,
@@ -98,15 +98,31 @@ export default function CampanasPage() {
 
       if (donationError) throw donationError
 
-      // Actualizar el monto actual de la campaña
+      // Actualizar el monto en la base de datos
       const campaign = campaigns.find((c) => c.id === campaignId)
       if (campaign) {
+        const updatedAmount = campaign.current_amount + amount
+        const updatedStatus = campaign.goal_amount && updatedAmount >= campaign.goal_amount ? "completada" : campaign.status
+        
         const { error: updateError } = await supabase
           .from("campaigns")
-          .update({ current_amount: campaign.current_amount + amount })
+          .update({
+            current_amount: updatedAmount,
+            status: updatedStatus,
+          })
           .eq("id", campaignId)
 
-        if (updateError) throw updateError
+        if (updateError) {
+          console.error("Error actualizando campaña:", updateError)
+          throw new Error(`No se pudo actualizar la campaña: ${updateError.message}`)
+        }
+
+        // Actualizar el estado local inmediatamente
+        setCampaigns(campaigns.map(c => 
+          c.id === campaignId 
+            ? { ...c, current_amount: updatedAmount, status: updatedStatus }
+            : c
+        ))
       }
 
       // Crear notificación
@@ -123,7 +139,10 @@ export default function CampanasPage() {
         description: `Has donado $${amount} a la campaña`,
       })
 
-      loadData()
+      // Recargar después de 1 segundo para verificar que el cambio persistió
+      setTimeout(() => {
+        loadCampaigns()
+      }, 1000)
     } catch (error: any) {
       toast({
         title: "Error",
