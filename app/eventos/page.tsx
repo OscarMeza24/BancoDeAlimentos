@@ -23,7 +23,30 @@ export default function EventosPage() {
 
   useEffect(() => {
     loadData()
+    setupRealtimeListener()
+
+    return () => {
+      supabase.channel("volunteer_events_list").unsubscribe()
+    }
   }, [])
+
+  const setupRealtimeListener = () => {
+    // Escuchar cambios en los eventos
+    supabase
+      .channel("volunteer_events_list")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "volunteer_events",
+        },
+        (payload) => {
+          loadEvents()
+        }
+      )
+      .subscribe()
+  }
 
   useEffect(() => {
     filterEvents()
@@ -111,9 +134,6 @@ export default function EventosPage() {
 
       if (error) throw error
 
-      // El trigger update_event_volunteers_count() actualizará automáticamente el contador
-      // No es necesario hacer UPDATE manual
-
       // Crear notificación
       await supabase.from("notifications").insert({
         user_id: profile.id,
@@ -128,7 +148,13 @@ export default function EventosPage() {
         description: "Te has unido al evento de voluntariado",
       })
 
-      loadData()
+      // Actualizar estado local inmediatamente
+      setRegisteredEvents([...registeredEvents, eventId])
+      setEvents(events.map(e => 
+        e.id === eventId 
+          ? { ...e, registered_volunteers: e.registered_volunteers + 1 }
+          : e
+      ))
     } catch (error: any) {
       toast({
         title: "Error",
@@ -150,15 +176,18 @@ export default function EventosPage() {
 
       if (error) throw error
 
-      // El trigger update_event_volunteers_count() actualizará automáticamente el contador
-      // No es necesario hacer UPDATE manual
-
       toast({
         title: "Has salido del evento",
         description: "Ya no estás registrado en este evento",
       })
 
-      loadData()
+      // Actualizar estado local inmediatamente
+      setRegisteredEvents(registeredEvents.filter(id => id !== eventId))
+      setEvents(events.map(e => 
+        e.id === eventId 
+          ? { ...e, registered_volunteers: Math.max(0, e.registered_volunteers - 1) }
+          : e
+      ))
     } catch (error: any) {
       toast({
         title: "Error",

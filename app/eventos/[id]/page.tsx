@@ -35,7 +35,56 @@ export default function EventoDetallesPage() {
 
   useEffect(() => {
     loadData()
+    setupRealtimeListener()
+
+    return () => {
+      // Cleanup: unsubscribe from realtime
+      supabase
+        .channel(`volunteer_events:${eventId}`)
+        .unsubscribe()
+      supabase
+        .channel(`event_participants:${eventId}`)
+        .unsubscribe()
+    }
   }, [eventId])
+
+  const setupRealtimeListener = () => {
+    // Escuchar cambios en el evento (incluyendo registered_volunteers)
+    supabase
+      .channel(`volunteer_events:${eventId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "volunteer_events",
+          filter: `id=eq.${eventId}`,
+        },
+        (payload) => {
+          const updatedEvent = payload.new as VolunteerEvent
+          setEvent(updatedEvent)
+        }
+      )
+      .subscribe()
+
+    // Escuchar cambios en los participantes
+    supabase
+      .channel(`event_participants:${eventId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "event_participants",
+          filter: `event_id=eq.${eventId}`,
+        },
+        async (payload) => {
+          // Recargar participantes cuando hay cambios
+          await loadParticipants()
+        }
+      )
+      .subscribe()
+  }
 
   const loadData = async () => {
     try {
@@ -138,10 +187,8 @@ export default function EventoDetallesPage() {
         description: "Te has unido al evento de voluntariado",
       })
 
-      // Recargar después de un breve delay para permitir que el trigger actualice
-      setTimeout(() => {
-        loadData()
-      }, 500)
+      // La actualización se reflejará automáticamente gracias al listener de realtime
+      setIsRegistered(true)
     } catch (error: any) {
       toast({
         title: "Error",
@@ -169,10 +216,8 @@ export default function EventoDetallesPage() {
         description: "Ya no estás registrado en este evento",
       })
 
-      // Recargar después de un breve delay para permitir que el trigger actualice
-      setTimeout(() => {
-        loadData()
-      }, 500)
+      // La actualización se reflejará automáticamente gracias al listener de realtime
+      setIsRegistered(false)
     } catch (error: any) {
       toast({
         title: "Error",
