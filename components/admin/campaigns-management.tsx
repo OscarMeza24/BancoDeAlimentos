@@ -47,6 +47,7 @@ import {
 import { Plus, MoreHorizontal, Trash2, Edit2, MapPin } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { supabase } from "@/lib/supabase"
+import { sendNotification } from "@/lib/notifications"
 import { toast } from "@/hooks/use-toast"
 import LocationPickerModal from "@/components/mapa/location-picker-modal"
 
@@ -85,6 +86,7 @@ export function CampaignsManagement() {
       end_date: "",
       category: "alimentos",
       target_organization: "",
+      status: "activa",
     },
   })
 
@@ -117,13 +119,13 @@ export function CampaignsManagement() {
 
   const onSubmit = async (values: any) => {
     try {
-      // Validar que la meta sea un número positivo
+      // Validar que la meta sea un número positivo o 0
       const goalAmount = typeof values.goal_amount === "string" ? parseFloat(values.goal_amount) : values.goal_amount
       
-      if (goalAmount <= 0) {
+      if (isNaN(goalAmount) || goalAmount < 0) {
         toast({
           title: "Error",
-          description: "La meta debe ser mayor a 0",
+          description: "La meta debe ser un número válido mayor o igual a 0",
           variant: "destructive",
         })
         return
@@ -141,11 +143,12 @@ export function CampaignsManagement() {
       const submitData = {
         title: values.title,
         description: values.description,
-        goal_amount: goalAmount,
+        goal_amount: goalAmount || null,
         start_date: values.start_date,
         end_date: values.end_date,
         category: values.category,
         target_organization: values.target_organization,
+        status: values.status,
         ...(selectedLocation && {
           latitude: selectedLocation.latitude,
           longitude: selectedLocation.longitude,
@@ -165,7 +168,7 @@ export function CampaignsManagement() {
       } else {
         const { data, error } = await supabase
           .from("campaigns")
-          .insert([{ ...submitData, current_amount: 0, status: "activa" }])
+          .insert([{ ...submitData, current_amount: 0 }])
           .select()
 
         if (error) throw error
@@ -181,11 +184,11 @@ export function CampaignsManagement() {
       setSelectedLocation(null)
       setShowDialog(false)
       setEditingId(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving campaign:", error)
       toast({
         title: "Error",
-        description: "No se pudo guardar la campaña",
+        description: error.message || "No se pudo guardar la campaña",
         variant: "destructive",
       })
     }
@@ -200,6 +203,7 @@ export function CampaignsManagement() {
       end_date: campaign.end_date,
       category: campaign.category || "alimentos",
       target_organization: campaign.target_organization || "",
+      status: campaign.status || "activa",
     })
     if (campaign.latitude && campaign.longitude) {
       setSelectedLocation({
@@ -435,6 +439,30 @@ export function CampaignsManagement() {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Estado de la Campaña</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="activa">Activa</SelectItem>
+                              <SelectItem value="pausada">Pausada</SelectItem>
+                              <SelectItem value="completada">Completada</SelectItem>
+                              <SelectItem value="cancelada">Cancelada</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <Button type="submit" className="w-full">
                       {editingId ? "Actualizar" : "Crear"} Campaña

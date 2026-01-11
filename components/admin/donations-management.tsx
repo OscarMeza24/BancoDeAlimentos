@@ -20,9 +20,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CheckCircle, XCircle, Eye } from "lucide-react"
+import { CheckCircle, XCircle, Eye, Edit2, Trash2, MoreHorizontal } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Donation {
   id: string
@@ -42,6 +48,7 @@ export function DonationsManagement() {
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     loadDonations()
@@ -132,6 +139,33 @@ export function DonationsManagement() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este alimento?")) return
+
+    try {
+      setDeleting(id)
+      const { error } = await supabase.from("food_items").delete().eq("id", id)
+
+      if (error) throw error
+
+      setDonations(donations.filter((d) => d.id !== id))
+
+      toast({
+        title: "Éxito",
+        description: "Alimento eliminado correctamente",
+      })
+    } catch (error) {
+      console.error("Error deleting food item:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el alimento",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "disponible":
@@ -191,38 +225,38 @@ export function DonationsManagement() {
                       </TableCell>
                       <TableCell>{new Date(donation.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedDonation(donation)
-                            setShowDetails(true)
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {donation.status === "pendiente" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleApprove(donation.id)}
-                              disabled={updating === donation.id}
-                              className="text-green-600 hover:text-green-700"
-                            >
-                              <CheckCircle className="h-4 w-4" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReject(donation.id)}
-                              disabled={updating === donation.id}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedDonation(donation)
+                              setShowDetails(true)
+                            }}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(donation.id)} disabled={deleting === donation.id}>
+                              <Trash2 className="h-4 w-4 mr-2 text-red-600" />
+                              Eliminar
+                            </DropdownMenuItem>
+                            {donation.status === "pendiente" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleApprove(donation.id)} disabled={updating === donation.id}>
+                                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                                  Aprobar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleReject(donation.id)} disabled={updating === donation.id}>
+                                  <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                                  Rechazar
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))

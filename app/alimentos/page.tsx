@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase"
 import type { Profile, FoodItem, FoodCategory } from "@/lib/supabase"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
+import { DonorReceivedRequests } from "@/components/donor/received-requests"
 
 export default function AlimentosPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -380,6 +381,13 @@ export default function AlimentosPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Solicitudes recibidas para donantes */}
+        {profile?.role === "donante" && (
+          <div className="mt-8">
+            <DonorReceivedRequests profile={profile} />
           </div>
         )}
       </div>

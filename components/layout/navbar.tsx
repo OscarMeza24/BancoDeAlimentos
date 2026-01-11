@@ -43,9 +43,13 @@ export default function Navbar() {
 
   const loadNotifications = async () => {
     try {
+      const user = await getCurrentProfile()
+      if (!user) return
+
       const { data, error } = await supabase
         .from("notifications")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10)
 
@@ -176,26 +180,34 @@ export default function Navbar() {
                 {notifications.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">No hay notificaciones</div>
                 ) : (
-                  notifications.map((notification) => (
-                    <DropdownMenuItem
-                      key={notification.id}
-                      className={`p-3 cursor-pointer transition-colors ${!notification.read ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
-                      onClick={() => {
-                        markNotificationAsRead(notification.id)
-                        if (notification.action_url) {
-                          router.push(notification.action_url)
-                        }
-                      }}
-                    >
-                      <div className="flex flex-col space-y-1">
-                        <div className="font-medium text-sm">{notification.title}</div>
-                        <div className="text-xs text-gray-600">{notification.message}</div>
-                        <div className="text-xs text-gray-400">
-                          {new Date(notification.created_at).toLocaleDateString()}
+                  <>
+                    {notifications.map((notification) => (
+                      <DropdownMenuItem
+                        key={notification.id}
+                        className={`p-3 cursor-pointer transition-colors ${!notification.read ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
+                        onClick={() => {
+                          markNotificationAsRead(notification.id)
+                          if (notification.action_url) {
+                            router.push(notification.action_url)
+                          }
+                        }}
+                      >
+                        <div className="flex flex-col space-y-1">
+                          <div className="font-medium text-sm">{notification.title}</div>
+                          <div className="text-xs text-gray-600">{notification.message}</div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(notification.created_at).toLocaleDateString()}
+                          </div>
                         </div>
-                      </div>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/notificaciones" className="cursor-pointer hover:bg-primary/5 transition-colors">
+                        <span className="text-primary font-medium">Ver todas las notificaciones</span>
+                      </Link>
                     </DropdownMenuItem>
-                  ))
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

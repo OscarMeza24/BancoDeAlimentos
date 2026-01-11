@@ -103,6 +103,11 @@ CREATE TABLE IF NOT EXISTS campaigns (
   end_date TIMESTAMP WITH TIME ZONE,
   status TEXT CHECK (status IN ('activa', 'pausada', 'completada', 'cancelada')) DEFAULT 'activa',
   image_url TEXT,
+  category TEXT CHECK (category IN ('alimentos', 'emergencia', 'educacion', 'salud', 'otro')) DEFAULT 'alimentos',
+  target_organization TEXT,
+  location TEXT,
+  latitude DECIMAL(10, 8),
+  longitude DECIMAL(11, 8),
   created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   CONSTRAINT positive_amounts CHECK (goal_amount >= 0 AND current_amount >= 0)
@@ -111,6 +116,8 @@ CREATE TABLE IF NOT EXISTS campaigns (
 -- Índices para campaigns
 CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status);
 CREATE INDEX IF NOT EXISTS idx_campaigns_created_by ON campaigns(created_by);
+CREATE INDEX IF NOT EXISTS idx_campaigns_category ON campaigns(category);
+CREATE INDEX IF NOT EXISTS idx_campaigns_location ON campaigns(latitude, longitude) WHERE latitude IS NOT NULL;
 
 -- Tabla de donaciones monetarias
 CREATE TABLE IF NOT EXISTS monetary_donations (
@@ -159,6 +166,9 @@ CREATE TABLE IF NOT EXISTS volunteer_events (
   max_volunteers INTEGER,
   registered_volunteers INTEGER DEFAULT 0,
   status TEXT CHECK (status IN ('programado', 'en_curso', 'completado', 'cancelado')) DEFAULT 'programado',
+  category TEXT CHECK (category IN ('general', 'recoleccion', 'distribucion', 'capacitacion', 'limpieza', 'otro')) DEFAULT 'general',
+  required_materials TEXT,
+  meeting_point TEXT,
   created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   CONSTRAINT positive_max_volunteers CHECK (max_volunteers IS NULL OR max_volunteers > 0),
@@ -169,6 +179,7 @@ CREATE TABLE IF NOT EXISTS volunteer_events (
 CREATE INDEX IF NOT EXISTS idx_volunteer_events_date ON volunteer_events(event_date);
 CREATE INDEX IF NOT EXISTS idx_volunteer_events_status ON volunteer_events(status);
 CREATE INDEX IF NOT EXISTS idx_volunteer_events_created_by ON volunteer_events(created_by);
+CREATE INDEX IF NOT EXISTS idx_volunteer_events_category ON volunteer_events(category);
 
 -- Tabla de participación en eventos
 CREATE TABLE IF NOT EXISTS event_participants (

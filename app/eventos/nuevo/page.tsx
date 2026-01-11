@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, MapPin, Users, ArrowLeft } from "lucide-react"
 import { getCurrentProfile } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
+import { sendNotification } from "@/lib/notifications"
 import type { Profile } from "@/lib/supabase"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
@@ -107,6 +108,26 @@ export default function NuevoEventoPage() {
         .single()
 
       if (error) throw error
+
+      // Send notification to all users about the new event
+      const { data: allUsers } = await supabase
+        .from("profiles")
+        .select("id")
+        .neq("id", profile.id)
+
+      if (allUsers && allUsers.length > 0) {
+        for (const user of allUsers) {
+          await sendNotification(
+            user.id,
+            {
+              title: `Nuevo evento: ${formData.title}`,
+              message: `Se ha creado un nuevo evento. ¡Únete como voluntario!`,
+              type: "evento",
+              action_url: `/eventos/${data.id}`,
+            }
+          )
+        }
+      }
 
       toast({
         title: "¡Evento creado exitosamente!",

@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation"
 import { UsersManagement } from "@/components/admin/users-management"
 import { DonationsManagement } from "@/components/admin/donations-management"
 import { CampaignsManagement } from "@/components/admin/campaigns-management"
+import { EventsManagement } from "@/components/admin/events-management"
 import { Reports } from "@/components/admin/reports"
 
 interface AdminStats {
@@ -271,6 +272,7 @@ export default function AdminPage() {
             <TabsTrigger value="users">Usuarios</TabsTrigger>
             <TabsTrigger value="donations">Donaciones</TabsTrigger>
             <TabsTrigger value="campaigns">Campañas</TabsTrigger>
+            <TabsTrigger value="events">Eventos</TabsTrigger>
             <TabsTrigger value="reports">Reportes</TabsTrigger>
           </TabsList>
 
@@ -376,6 +378,10 @@ export default function AdminPage() {
 
           <TabsContent value="campaigns">
             <CampaignsManagement />
+          </TabsContent>
+
+          <TabsContent value="events">
+            <EventsManagement />
           </TabsContent>
 
           <TabsContent value="reports">

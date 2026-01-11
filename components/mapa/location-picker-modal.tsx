@@ -123,8 +123,8 @@ export default function LocationPickerModal({
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Seleccionar ubicación de recogida</DialogTitle>
-          <DialogDescription className="space-y-2 mt-2">
-            <div className="flex gap-2 text-sm">
+          <DialogDescription asChild>
+            <div className="flex gap-2 text-sm mt-2">
               <AlertCircle className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <span>Haz clic en el mapa para seleccionar la ubicación o arrastra el marcador para ajustarlo</span>
             </div>

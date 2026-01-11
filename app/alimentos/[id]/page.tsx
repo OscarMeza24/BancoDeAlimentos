@@ -9,6 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Calendar, MapPin, Package, User, ArrowLeft, MessageSquare } from "lucide-react"
 import { getCurrentProfile } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
@@ -27,6 +35,7 @@ export default function AlimentoDetallesPage() {
   const [requesting, setRequesting] = useState(false)
   const [requestMessage, setRequestMessage] = useState("")
   const [quantityRequested, setQuantityRequested] = useState(1)
+  const [showRequestDialog, setShowRequestDialog] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -67,6 +76,41 @@ export default function AlimentoDetallesPage() {
     } catch (error) {
       console.error("Error loading food item:", error)
     }
+  }
+
+  const handleOpenRequestDialog = () => {
+    if (!profile) {
+      toast({
+        title: "Acceso requerido",
+        description: "Debes iniciar sesión para solicitar alimentos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (profile.role !== "beneficiario") {
+      toast({
+        title: "Sin permisos",
+        description: "Solo los beneficiarios pueden solicitar alimentos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!foodItem) return
+
+    if (quantityRequested > foodItem.quantity) {
+      toast({
+        title: "Cantidad no disponible",
+        description: `Solo hay ${foodItem.quantity} ${foodItem.unit} disponibles`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Abrir el diálogo para que escriba el mensaje
+    setRequestMessage("")
+    setShowRequestDialog(true)
   }
 
   const handleRequestFood = async () => {
@@ -136,6 +180,7 @@ export default function AlimentoDetallesPage() {
 
       setRequestMessage("")
       setQuantityRequested(1)
+      setShowRequestDialog(false)
       
       // Recargar después de un breve delay
       setTimeout(() => {
@@ -328,46 +373,79 @@ export default function AlimentoDetallesPage() {
 
             {/* Solicitar alimento */}
             {canRequest && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    Solicitar Alimento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Cantidad a solicitar</Label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        id="quantity"
-                        type="number"
-                        min="1"
-                        max={foodItem.quantity}
-                        value={quantityRequested}
-                        onChange={(e) => setQuantityRequested(parseInt(e.target.value) || 1)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      />
-                      <span className="text-sm text-gray-500 whitespace-nowrap">{foodItem.unit}</span>
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center">
+                      <MessageSquare className="h-5 w-5 mr-2" />
+                      Solicitar Alimento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Disponible: <span className="font-medium">{foodItem.quantity} {foodItem.unit}</span>
+                    </p>
+                    <Button onClick={handleOpenRequestDialog} className="w-full">
+                      Solicitar Alimento
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Dialog para solicitar alimento */}
+                <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Solicitar {foodItem.name}</DialogTitle>
+                      <DialogDescription>
+                        Especifica la cantidad y cuéntale al donante por qué necesitas este alimento
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="dialog-quantity">Cantidad a solicitar</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            id="dialog-quantity"
+                            type="number"
+                            min="1"
+                            max={foodItem.quantity}
+                            value={quantityRequested}
+                            onChange={(e) => setQuantityRequested(parseInt(e.target.value) || 1)}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          />
+                          <span className="text-sm text-gray-500 whitespace-nowrap">{foodItem.unit}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="dialog-message">Cuéntale al donante por qué lo necesitas</Label>
+                        <Textarea
+                          id="dialog-message"
+                          placeholder="Ej: Tengo dos hijos en edad escolar y necesito alimentos nutritivos para su desayuno..."
+                          value={requestMessage}
+                          onChange={(e) => setRequestMessage(e.target.value)}
+                          rows={4}
+                          className="resize-none"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Mensaje (opcional)</Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Cuéntale al donante por qué necesitas este alimento..."
-                      value={requestMessage}
-                      onChange={(e) => setRequestMessage(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-
-                  <Button onClick={handleRequestFood} disabled={requesting} className="w-full">
-                    {requesting ? "Enviando solicitud..." : "Enviar Solicitud"}
-                  </Button>
-                </CardContent>
-              </Card>
+                    <DialogFooter className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowRequestDialog(false)}
+                        disabled={requesting}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleRequestFood} disabled={requesting}>
+                        {requesting ? "Enviando..." : "Enviar Solicitud"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {/* Acciones del donante */}
