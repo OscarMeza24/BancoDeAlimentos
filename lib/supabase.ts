@@ -172,6 +172,9 @@ export interface VolunteerEvent {
   status: "programado" | "en_curso" | "completado" | "cancelado"
   created_by?: string
   created_at: string
+  category?: string
+  required_materials?: string
+  meeting_point?: string
   creator?: {
     id: string
     full_name?: string

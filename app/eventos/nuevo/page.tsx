@@ -14,11 +14,14 @@ import { supabase } from "@/lib/supabase"
 import type { Profile } from "@/lib/supabase"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
+import LocationPickerModal from "@/components/mapa/location-picker-modal"
 
 export default function NuevoEventoPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(null)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -26,6 +29,9 @@ export default function NuevoEventoPage() {
     location: "",
     max_volunteers: "",
     status: "programado" as "programado" | "en_curso" | "completado" | "cancelado",
+    category: "general" as string,
+    required_materials: "",
+    meeting_point: "",
   })
 
   useEffect(() => {
@@ -75,6 +81,10 @@ export default function NuevoEventoPage() {
         throw new Error("La fecha del evento no puede ser en el pasado")
       }
 
+      if (!selectedLocation) {
+        throw new Error("Debes seleccionar una ubicación en el mapa")
+      }
+
       // Crear evento
       const { data, error } = await supabase
         .from("volunteer_events")
@@ -82,11 +92,16 @@ export default function NuevoEventoPage() {
           title: formData.title,
           description: formData.description || null,
           event_date: formData.event_date,
-          location: formData.location || null,
+          location: selectedLocation.address,
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
           registered_volunteers: 0,
           status: formData.status,
           created_by: profile.id,
+          category: formData.category,
+          required_materials: formData.required_materials || null,
+          meeting_point: formData.meeting_point || null,
         })
         .select()
         .single()
@@ -165,6 +180,24 @@ export default function NuevoEventoPage() {
                 />
               </div>
 
+              {/* Categoría */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Categoría del Evento</Label>
+                <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="recoleccion">Recolección</SelectItem>
+                    <SelectItem value="distribucion">Distribución</SelectItem>
+                    <SelectItem value="capacitacion">Capacitación</SelectItem>
+                    <SelectItem value="limpieza">Limpieza</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Fecha y hora */}
               <div className="space-y-2">
                 <Label htmlFor="event_date">
@@ -183,19 +216,67 @@ export default function NuevoEventoPage() {
                 </div>
               </div>
 
-              {/* Ubicación */}
+              {/* Ubicación en Mapa */}
               <div className="space-y-2">
-                <Label htmlFor="location">Ubicación</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="location"
-                    placeholder="Ej: Centro Comunitario, Calle Principal 123"
-                    value={formData.location}
-                    onChange={(e) => handleChange("location", e.target.value)}
-                    className="pl-10"
-                  />
+                <Label>
+                  Ubicación en el Mapa <span className="text-red-500">*</span>
+                </Label>
+                <div className="border rounded-lg p-3 bg-gray-50">
+                  {selectedLocation ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                        <span className="font-medium">{selectedLocation.address}</span>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Lat: {selectedLocation.latitude.toFixed(6)}, Long: {selectedLocation.longitude.toFixed(6)}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLocationPicker(true)}
+                        className="w-full"
+                      >
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Cambiar ubicación
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowLocationPicker(true)}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Seleccionar ubicación en el mapa
+                    </Button>
+                  )}
                 </div>
+              </div>
+
+              {/* Punto de encuentro */}
+              <div className="space-y-2">
+                <Label htmlFor="meeting_point">Punto de Encuentro / Referencia</Label>
+                <Input
+                  id="meeting_point"
+                  placeholder="Ej: Esquina con la tienda de abarrotes"
+                  value={formData.meeting_point}
+                  onChange={(e) => handleChange("meeting_point", e.target.value)}
+                />
+              </div>
+
+              {/* Materiales Requeridos */}
+              <div className="space-y-2">
+                <Label htmlFor="required_materials">Materiales Requeridos</Label>
+                <Textarea
+                  id="required_materials"
+                  placeholder="Ej: Bolsas plásticas, guantes, gorras, botellas de agua, etc."
+                  value={formData.required_materials}
+                  onChange={(e) => handleChange("required_materials", e.target.value)}
+                  rows={3}
+                />
               </div>
 
               {/* Máximo de voluntarios */}
@@ -244,6 +325,17 @@ export default function NuevoEventoPage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Location Picker Modal */}
+        <LocationPickerModal
+          open={showLocationPicker}
+          onOpenChange={setShowLocationPicker}
+          onLocationSelect={(location) => {
+            setSelectedLocation(location)
+            setShowLocationPicker(false)
+          }}
+          initialLocation={selectedLocation ? { latitude: selectedLocation.latitude, longitude: selectedLocation.longitude } : null}
+        />
       </div>
     </div>
   )

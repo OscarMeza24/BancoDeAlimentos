@@ -24,6 +24,13 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Table,
   TableBody,
   TableCell,
@@ -37,10 +44,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Plus, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
+import { Plus, MoreHorizontal, Trash2, Edit2, MapPin } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { supabase } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
+import LocationPickerModal from "@/components/mapa/location-picker-modal"
 
 interface Campaign {
   id: string
@@ -52,14 +60,21 @@ interface Campaign {
   created_at: string
   start_date: string
   end_date: string
+  category?: string
+  location?: string
+  latitude?: number
+  longitude?: number
+  target_organization?: string
 }
 
 export function CampaignsManagement() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [showDialog, setShowDialog] = useState(false)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(null)
 
   const form = useForm({
     defaultValues: {
@@ -68,6 +83,8 @@ export function CampaignsManagement() {
       goal_amount: "0",
       start_date: "",
       end_date: "",
+      category: "alimentos",
+      target_organization: "",
     },
   })
 
@@ -112,12 +129,28 @@ export function CampaignsManagement() {
         return
       }
 
+      if (!selectedLocation && !editingId) {
+        toast({
+          title: "Error",
+          description: "Por favor selecciona una ubicación en el mapa",
+          variant: "destructive",
+        })
+        return
+      }
+
       const submitData = {
         title: values.title,
         description: values.description,
         goal_amount: goalAmount,
         start_date: values.start_date,
         end_date: values.end_date,
+        category: values.category,
+        target_organization: values.target_organization,
+        ...(selectedLocation && {
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          location: selectedLocation.address,
+        }),
       }
 
       if (editingId) {
@@ -145,6 +178,7 @@ export function CampaignsManagement() {
       }
 
       form.reset()
+      setSelectedLocation(null)
       setShowDialog(false)
       setEditingId(null)
     } catch (error) {
@@ -164,7 +198,16 @@ export function CampaignsManagement() {
       goal_amount: campaign.goal_amount.toString(),
       start_date: campaign.start_date,
       end_date: campaign.end_date,
+      category: campaign.category || "alimentos",
+      target_organization: campaign.target_organization || "",
     })
+    if (campaign.latitude && campaign.longitude) {
+      setSelectedLocation({
+        latitude: campaign.latitude,
+        longitude: campaign.longitude,
+        address: campaign.location || "",
+      })
+    }
     setEditingId(campaign.id)
     setShowDialog(true)
   }
@@ -232,7 +275,7 @@ export function CampaignsManagement() {
                   Nueva Campaña
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingId ? "Editar Campaña" : "Nueva Campaña"}</DialogTitle>
                   <DialogDescription>
@@ -263,26 +306,105 @@ export function CampaignsManagement() {
                         <FormItem>
                           <FormLabel>Descripción</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Descripción de la campaña" {...field} />
+                            <Textarea placeholder="Descripción detallada de la campaña" rows={4} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="alimentos">Alimentos</SelectItem>
+                                <SelectItem value="emergencia">Emergencia</SelectItem>
+                                <SelectItem value="educacion">Educación</SelectItem>
+                                <SelectItem value="salud">Salud</SelectItem>
+                                <SelectItem value="otro">Otro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="goal_amount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Meta de recaudación ($)</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="0" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <FormField
                       control={form.control}
-                      name="goal_amount"
+                      name="target_organization"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Meta de recaudación ($)</FormLabel>
+                          <FormLabel>Organización Destinataria</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} />
+                            <Input placeholder="Nombre de la organización beneficiada" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
+                    {/* Ubicación */}
+                    <FormItem>
+                      <FormLabel>Ubicación en el Mapa</FormLabel>
+                      <div className="border rounded-lg p-3 bg-gray-50">
+                        {selectedLocation ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <MapPin className="h-4 w-4 text-blue-500" />
+                              <span className="font-medium">{selectedLocation.address}</span>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              Lat: {selectedLocation.latitude.toFixed(6)}, Long: {selectedLocation.longitude.toFixed(6)}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowLocationPicker(true)}
+                              className="w-full"
+                            >
+                              <MapPin className="h-4 w-4 mr-2" />
+                              Cambiar ubicación
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setShowLocationPicker(true)}
+                          >
+                            <MapPin className="h-4 w-4 mr-2" />
+                            Seleccionar ubicación en el mapa
+                          </Button>
+                        )}
+                      </div>
+                    </FormItem>
 
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -337,6 +459,20 @@ export function CampaignsManagement() {
                       <div className="flex-1">
                         <h3 className="font-semibold">{campaign.title}</h3>
                         <p className="text-sm text-gray-600 mt-1">{campaign.description}</p>
+                        {campaign.target_organization && (
+                          <p className="text-sm text-blue-600 mt-1">📦 {campaign.target_organization}</p>
+                        )}
+                        {campaign.location && (
+                          <div className="flex items-center gap-1 text-sm text-green-600 mt-1">
+                            <MapPin className="h-3 w-3" />
+                            {campaign.location}
+                          </div>
+                        )}
+                        {campaign.category && (
+                          <Badge className="mt-2" variant="outline">
+                            {campaign.category}
+                          </Badge>
+                        )}
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -388,6 +524,17 @@ export function CampaignsManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        open={showLocationPicker}
+        onOpenChange={setShowLocationPicker}
+        onLocationSelect={(location) => {
+          setSelectedLocation(location)
+          setShowLocationPicker(false)
+        }}
+        initialLocation={selectedLocation ? { latitude: selectedLocation.latitude, longitude: selectedLocation.longitude } : null}
+      />
     </>
   )
 }

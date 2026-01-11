@@ -271,22 +271,52 @@ export default function EventoDetallesPage() {
 
               <CardContent>
                 <div className="space-y-4">
+                  {/* Categoría */}
+                  {event.category && (
+                    <div>
+                      <Badge variant="outline" className="mb-3">
+                        {event.category === "recoleccion" && "🎁 Recolección"}
+                        {event.category === "distribucion" && "📦 Distribución"}
+                        {event.category === "capacitacion" && "📚 Capacitación"}
+                        {event.category === "limpieza" && "🧹 Limpieza"}
+                        {event.category === "general" && "📋 General"}
+                        {event.category === "otro" && "🔧 Otro"}
+                      </Badge>
+                    </div>
+                  )}
+
                   {/* Fecha y hora */}
-                  <div className="flex items-center text-gray-700">
-                    <Clock className="h-5 w-5 mr-3 text-gray-400" />
+                  <div className="flex items-start text-gray-700">
+                    <Clock className="h-5 w-5 mr-3 text-gray-400 mt-0.5" />
                     <div>
                       <p className="font-medium">Fecha y Hora</p>
                       <p className="text-sm text-gray-600">{new Date(event.event_date).toLocaleString()}</p>
                     </div>
                   </div>
 
-                  {/* Ubicación */}
+                  {/* Ubicación en Mapa */}
                   {event.location && (
-                    <div className="flex items-center text-gray-700">
-                      <MapPin className="h-5 w-5 mr-3 text-gray-400" />
-                      <div>
+                    <div className="flex items-start text-gray-700">
+                      <MapPin className="h-5 w-5 mr-3 text-green-500 mt-0.5" />
+                      <div className="flex-1">
                         <p className="font-medium">Ubicación</p>
                         <p className="text-sm text-gray-600">{event.location}</p>
+                        {event.latitude && event.longitude && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Coordenadas: {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Punto de Encuentro */}
+                  {event.meeting_point && (
+                    <div className="flex items-start text-gray-700">
+                      <MapPin className="h-5 w-5 mr-3 text-blue-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Punto de Encuentro</p>
+                        <p className="text-sm text-gray-600">{event.meeting_point}</p>
                       </div>
                     </div>
                   )}
@@ -312,6 +342,19 @@ export default function EventoDetallesPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Materiales Requeridos */}
+                  {event.required_materials && (
+                    <div className="flex items-start text-gray-700">
+                      <div className="h-5 w-5 mr-3 text-orange-500 mt-0.5 flex items-center justify-center">
+                        📋
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Materiales Requeridos</p>
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{event.required_materials}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Separator className="my-6" />
