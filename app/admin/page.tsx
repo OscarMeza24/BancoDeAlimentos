@@ -21,6 +21,10 @@ import { supabase } from "@/lib/supabase"
 import type { Profile } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { UsersManagement } from "@/components/admin/users-management"
+import { DonationsManagement } from "@/components/admin/donations-management"
+import { CampaignsManagement } from "@/components/admin/campaigns-management"
+import { Reports } from "@/components/admin/reports"
 
 interface AdminStats {
   totalUsers: number
@@ -56,6 +60,7 @@ export default function AdminPage() {
   })
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState("overview")
   const router = useRouter()
 
   useEffect(() => {
@@ -260,7 +265,7 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="overview">Resumen</TabsTrigger>
             <TabsTrigger value="users">Usuarios</TabsTrigger>
@@ -306,19 +311,19 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button className="h-20 flex-col">
+                    <Button className="h-20 flex-col" onClick={() => setActiveTab("users")}>
                       <Users className="h-6 w-6 mb-2" />
                       Gestionar Usuarios
                     </Button>
-                    <Button variant="outline" className="h-20 flex-col bg-transparent">
+                    <Button variant="outline" className="h-20 flex-col bg-transparent" onClick={() => setActiveTab("donations")}>
                       <Gift className="h-6 w-6 mb-2" />
                       Ver Donaciones
                     </Button>
-                    <Button variant="outline" className="h-20 flex-col bg-transparent">
+                    <Button variant="outline" className="h-20 flex-col bg-transparent" onClick={() => setActiveTab("campaigns")}>
                       <TrendingUp className="h-6 w-6 mb-2" />
                       Crear Campaña
                     </Button>
-                    <Button variant="outline" className="h-20 flex-col bg-transparent">
+                    <Button variant="outline" className="h-20 flex-col bg-transparent" onClick={() => setActiveTab("reports")}>
                       <BarChart3 className="h-6 w-6 mb-2" />
                       Ver Reportes
                     </Button>
@@ -362,63 +367,19 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Usuarios</CardTitle>
-                <CardDescription>Administra los usuarios de la plataforma</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Panel de gestión de usuarios en desarrollo</p>
-                </div>
-              </CardContent>
-            </Card>
+            <UsersManagement />
           </TabsContent>
 
           <TabsContent value="donations">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Donaciones</CardTitle>
-                <CardDescription>Supervisa las donaciones de alimentos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Gift className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Panel de gestión de donaciones en desarrollo</p>
-                </div>
-              </CardContent>
-            </Card>
+            <DonationsManagement />
           </TabsContent>
 
           <TabsContent value="campaigns">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Campañas</CardTitle>
-                <CardDescription>Administra las campañas solidarias</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Panel de gestión de campañas en desarrollo</p>
-                </div>
-              </CardContent>
-            </Card>
+            <CampaignsManagement />
           </TabsContent>
 
           <TabsContent value="reports">
-            <Card>
-              <CardHeader>
-                <CardTitle>Reportes y Análisis</CardTitle>
-                <CardDescription>Estadísticas detalladas y reportes de impacto</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Sistema de reportes en desarrollo</p>
-                </div>
-              </CardContent>
-            </Card>
+            <Reports />
           </TabsContent>
         </Tabs>
       </div>
